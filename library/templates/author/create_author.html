@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Create Author{% endblock %}
+
+{% block content %}
+    <h2>Create a New Author</h2>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'create_author' %}">
+        {% csrf_token %}
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" maxlength="20" required><br><br>
+
+        <label for="surname">Surname:</label>
+        <input type="text" id="surname" name="surname" maxlength="20" required><br><br>
+
+        <label for="patronymic">Patronymic:</label>
+        <input type="text" id="patronymic" name="patronymic" maxlength="20"><br><br>
+
+        <button type="submit">Create Author</button>
+    </form>
+{% endblock %}

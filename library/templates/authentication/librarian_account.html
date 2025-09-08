@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Librarian Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="color: #333; margin-bottom: 2rem;">👨‍💼 Librarian Dashboard</h1>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #28a745;">
+            <h3 style="color: #28a745; margin-bottom: 1rem;">📚 Books Management</h3>
+            <p>Manage library books, add new books, view all books</p>
+            <a href="{% url 'books_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Manage Books</a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #007bff;">
+            <h3 style="color: #007bff; margin-bottom: 1rem;">👥 Users Management</h3>
+            <p>View and manage all library users</p>
+            <a href="{% url 'all_users' %}" class="btn btn-primary" style="margin-top: 1rem;">Manage Users</a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #ffc107; margin-bottom: 1rem;">📋 Orders Management</h3>
+            <p>View all orders, close orders, manage returns</p>
+            <a href="{% url 'all_orders' %}" class="btn btn-primary" style="margin-top: 1rem;">Manage Orders</a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #6f42c1;">
+            <h3 style="color: #6f42c1; margin-bottom: 1rem;">✍️ Authors Management</h3>
+            <p>Add new authors, manage existing authors</p>
+            <a href="{% url 'authors_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Manage Authors</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1rem; background: #e3f2fd; border-radius: 8px;">
+        <strong>Your Privileges:</strong> As a librarian, you have full access to all system features including user management, book management, order processing, and author management.
+    </div>
+</div>
+{% endblock %}

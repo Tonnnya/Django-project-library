@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}All Books{% endblock %}
+
+{% block content %}
+    <h2>Information about all books:</h2>
+    <form method="get" style="margin-bottom: 1rem;">
+        <label for="q">Search by title:</label>
+        <input type="text" id="q" name="q" value="{{ request.GET.q }}">
+
+        <label for="author">Filter by author ID:</label>
+        <input type="text" id="author" name="author" value="{{ request.GET.author }}">
+
+        <button type="submit">Apply filter</button>
+    </form>
+
+    <ul>
+        {% for book in books %}
+             <li style="margin-bottom: 1rem;">
+                <a href="{% url 'book_detail' book.id %}">
+                    {{ book.name }}
+                </a>
+                — {{ book.description }}
+
+                 <a href="{% url 'create_order' book.id %}"
+                   class="btn btn-sm btn-primary"
+                   style="margin-left: 1rem;">
+                   Order this book
+                </a>
+
+            </li>
+        {% empty %}
+            <li>No books found.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

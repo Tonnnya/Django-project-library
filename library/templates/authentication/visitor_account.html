@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Visitor Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="color: #333; margin-bottom: 2rem;">📖 Welcome to Library</h1>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #28a745;">
+            <h3 style="color: #28a745; margin-bottom: 1rem;">📚 Browse Books</h3>
+            <p>Explore our book collection, search and filter books</p>
+            <a href="{% url 'books_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Browse Books</a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #007bff;">
+            <h3 style="color: #007bff; margin-bottom: 1rem;">📋 My Orders</h3>
+            <p>View your current and past book orders</p>
+            <a href="{% url 'my_orders' %}" class="btn btn-primary" style="margin-top: 1rem;">My Orders</a>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #ffc107; margin-bottom: 1rem;">➕ New Order</h3>
+            <p>Create a new book order</p>
+            <a href="{% url 'books_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Create Order</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
+        <strong>Your Account:</strong> You're logged in as a visitor. You can browse books, create orders, and manage your personal orders.
+    </div>
+</div>
+{% endblock %}

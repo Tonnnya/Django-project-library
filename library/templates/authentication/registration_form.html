@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Library System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="width: 100%; max-width: 500px;">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Create Account</h2>
+
+        <form method="post" action="{% url 'registration_form' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password_confirmation">Confirm Password *</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" maxlength="20">
+                </div>
+
+                <div class="form-group">
+                    <label for="middle_name">Middle Name</label>
+                    <input type="text" id="middle_name" name="middle_name" maxlength="20">
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" maxlength="20">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Account Type *</label>
+                <select id="role" name="role" required>
+                    <option value="0">Visitor </option>
+                    <option value="1">Librarian</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    ✨ Create Account
+                </button>
+                <a href="{% url 'login' %}" class="btn btn-secondary" style="text-align: center;">
+                    Already have account?
+                </a>
+            </div>
+        </form>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; color: #666;">
+            <strong>Account Types:</strong><br>
+            • <strong>Visitor:</strong> Can browse books, create orders, view personal orders<br>
+            • <strong>Librarian:</strong> Can manage books, users, authors, and all orders
+        </div>
+    </div>
+</div>
+{% endblock %}

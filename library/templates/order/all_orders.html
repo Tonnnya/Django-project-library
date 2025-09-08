@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}All Orders{% endblock %}
+
+{% block content %}
+<h2>📋 All Orders</h2>
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {{ message }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<ul>
+    {% for order in orders %}
+        <li style="margin-bottom: 1rem;">
+            <strong>Order {{ order.id }}</strong> —
+            <em>{{ order.book.name }}</em> —
+            by {{ order.user.username }}
+
+            {% if order.end_at %}
+                ✅ Closed at {{ order.end_at }}
+            {% else %}
+                🟢 Open
+                <form method="post" action="{% url 'close_order' order.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" style="margin-left: 1rem;">
+                        ❌ Close Order
+                    </button>
+                </form>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No orders.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

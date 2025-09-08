@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if book %}Edit Book{% else %}Add New Book{% endif %} - Library System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0;">
+    <div class="card" style="width: 100%; max-width: 700px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+            <h2 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.2rem; font-weight: 700; margin: 0;">
+                {% if False %}✏️ Edit Book{% else %}➕ Add New Book{% endif %}
+            </h2>
+            <a href="{% url 'books_list_view' %}" class="btn btn-secondary">← Back to Books</a>
+        </div>
+
+        <form method="post" action="{% url 'add_book' %}">
+            {% csrf_token %}
+
+            <!-- Name (замість Title) -->
+            <div class="form-group">
+                <label for="name">📖 Book Name *</label>
+                <input type="text" id="name" name="name" required
+                       value="{{ book.name|default:'' }}"
+                       maxlength="128"
+                       placeholder="Enter the book name">
+            </div>
+
+            <!-- Authors (множинний вибір) -->
+            <div class="form-group">
+                <label for="authors">👨‍🎨 Authors *</label>
+                <select id="authors" name="authors" required>
+                    <option value="">Select an author</option>
+                    {% for author in author %}
+                        <option value="{{ author.id }}">
+                            {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Count -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label for="count">📚 Available Count *</label>
+                    <input type="number" id="count" name="count" required
+                           value="{{ book.count|default:10 }}"
+                           min="0" placeholder="10">
+                </div>
+
+                <div class="form-group">
+                    <!-- Поле для майбутнього розширення -->
+                    <label for="future_field">🔮 Future Field</label>
+                    <input type="text" id="future_field" name="future_field"
+                           placeholder="Reserved for future use" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">📝 Description</label>
+                <textarea id="description" name="description" rows="4"
+                          maxlength="256"
+                          placeholder="Enter book description (optional, max 256 characters)">{{ book.description|default:'' }}</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2.5rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1.1rem; font-weight: 600;">
+                    {% if False %}💾 Update Book{% else %}✨ Add Book{% endif %}
+                </button>
+                <a href="{% url 'books_list_view' %}" class="btn btn-secondary" style="text-align: center; padding: 1rem; font-weight: 600;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    padding: 2rem;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+select[multiple] {
+    min-height: 120px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

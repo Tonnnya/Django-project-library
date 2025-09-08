@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<h2>My Orders</h2>
+<ul>
+    {% for order in orders %}
+        <li>
+            Order {{ order.id }} — {{ order.book.name }} — 
+            {% if order.end_at %}
+                Closed at {{ order.end_at }}
+            {% else %}
+                Open (must return before {{ order.plated_end_at }})
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>You don’t have any orders yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
