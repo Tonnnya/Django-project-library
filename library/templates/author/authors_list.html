@@ -1,35 +1,179 @@
 {% extends "base.html" %}
 
-{% block title %}Authors List{% endblock %}
+{% block title %}Authors List - Library System{% endblock %}
 
 {% block content %}
-    <h2>All Authors</h2>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                ✍️ Authors Library
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Manage and browse our collection of talented authors
+            </p>
+        </div>
+        {% if user.is_librarian %}
+        <div>
+            <a href="{% url 'create_author' %}" class="btn btn-primary">➕ Add New Author</a>
+        </div>
+        {% endif %}
+    </div>
 
-    <a href="{% url 'create_author' %}" class="btn btn-success" style="margin-bottom: 1rem;">
-        ➕ Add Author
-    </a>
+    <!-- Statistics Card -->
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 2rem; border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1); margin-bottom: 3rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; text-align: center;">
+            <div>
+                <h3 style="color: #667eea; font-size: 2rem; margin: 0; font-weight: 700;">{{ authors|length }}</h3>
+                <p style="color: #666; margin: 0.5rem 0 0 0;">Total Authors</p>
+            </div>
+            <div>
+                <h3 style="color: #28a745; font-size: 2rem; margin: 0; font-weight: 700;">
+                    {% with books_count=0 %}
+                        {% for author in authors %}
+                            {% with books_count=books_count|add:author.book.count %}{% endwith %}
+                        {% endfor %}
+                        {{ books_count|default:"0" }}
+                    {% endwith %}
+                </h3>
+                <p style="color: #666; margin: 0.5rem 0 0 0;">Published Books</p>
+            </div>
+        </div>
+    </div>
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    <ul>
+    <!-- Authors List -->
+    {% if authors %}
+    <div style="display: grid; gap: 1.5rem;">
         {% for author in authors %}
-            <li style="margin-bottom: 0.5rem;">
-                {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+        <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(102, 126, 234, 0.1); border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden;"
+             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.1)'; this.style.borderColor='rgba(102, 126, 234, 0.3)';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='rgba(102, 126, 234, 0.1)';">
 
-                <a href="{% url 'delete_author' author.id %}"
-                   class="btn btn-danger btn-sm"
-                   style="margin-left: 1rem;">
-                   ❌ Delete
-                </a>
-            </li>
-        {% empty %}
-            <li>No authors found.</li>
+            <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 2rem; align-items: center;">
+                <!-- Author Avatar -->
+                <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    ✍️
+                </div>
+
+                <!-- Author Info -->
+                <div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.3rem; font-weight: 600;">
+                        {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+                    </h3>
+
+                    <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; font-size: 0.9rem; color: #888;">
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            🆔 <strong>ID:</strong> {{ author.id }}
+                        </span>
+
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            📚 <strong>Books:</strong>
+                            <span style="color: {% if author.books.count > 3 %}#28a745{% elif author.books.count > 0 %}#ffc107{% else %}#dc3545{% endif %}; font-weight: 600;">
+                                {{ author.books.count }} published
+                            </span>
+                        </span>
+
+                        {% if author.books.count > 0 %}
+                        <span style="display: flex; align-items: center; gap: 0.5rem; color: #667eea;">
+                            🏆 <strong>Recent:</strong>
+                            {% with latest=author.books.all|first %}
+                                "{{ latest.name|truncatechars:25 }}"
+                            {% endwith %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 150px;">
+                    <a href="#" class="btn btn-secondary" style="text-align: center; font-size: 0.9rem;">
+                        👁️ View Books
+                    </a>
+
+                    {% if user.is_librarian %}
+                        <a href="{% url 'delete_author' author.id %}"
+                           class="btn"
+                           style="background: #dc3545; color: white; text-align: center; font-size: 0.9rem;"
+                           onclick="return confirm('Are you sure you want to delete this author? This action cannot be undone.')">
+                            🗑️ Delete
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
+
+    <!-- Pagination or Load More could go here -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(102, 126, 234, 0.1);">
+        <p style="color: #666;">
+            Showing {{ authors|length }} author{{ authors|length|pluralize }}
+        </p>
+    </div>
+
+    {% else %}
+    <!-- No Authors Found -->
+    <div style="text-align: center; padding: 4rem 2rem; color: #666;">
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 20px; padding: 3rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✍️</div>
+            <h3 style="color: #999; margin-bottom: 1rem;">No Authors Available</h3>
+            <p style="margin-bottom: 2rem;">
+                The authors collection is currently empty. Add the first author to get started.
+            </p>
+
+            {% if user.is_librarian %}
+                <a href="{% url 'create_author' %}" class="btn btn-primary">
+                    ➕ Add First Author
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: auto 1fr auto"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    div[style*="display: flex"][style*="gap: 2rem"] {
+        flex-direction: column;
+        gap: 0.75rem !important;
+    }
+
+    div[style*="min-width: 150px"] {
+        min-width: auto !important;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Hover animations for better UX */
+div[style*="transition: all 0.3s ease"]:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+</style>
 {% endblock %}

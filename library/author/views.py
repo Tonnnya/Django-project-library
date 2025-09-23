@@ -23,7 +23,7 @@ def create_author_view(request):
     if request.method == "POST":
         name = request.POST.get("name")
         surname = request.POST.get("surname")
-        patronymic = request.POST.get("patronymic")
+        patronymic = request.POST.get("patronymic") or None
 
         author = Author.create(name, surname, patronymic)
         if author:

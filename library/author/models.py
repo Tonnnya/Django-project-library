@@ -16,8 +16,8 @@ class Author(models.Model):
     """
     name = models.CharField(blank=True, max_length=20)
     surname = models.CharField(blank=True, max_length=20)
-    patronymic = models.CharField(blank=True, max_length=20)
-    # books = models.ManyToManyField("book.Book", related_name="authors")
+    patronymic = models.CharField(blank=True, max_length=20, null=True)
+    # book = models.ManyToManyField("book.Book", related_name="authors")
     id = models.AutoField(primary_key=True)
 
     def __str__(self):
@@ -64,7 +64,7 @@ class Author(models.Model):
             return False
 
     @staticmethod
-    def create(name, surname, patronymic):
+    def create(name, surname, patronymic=None):
         """
         param name: Describes name of the author
         type name: str max_length=20
@@ -74,10 +74,14 @@ class Author(models.Model):
         type patronymic: str max_length=20
         :return: a new author object which is also written into the DB
         """
-        if name and len(name) <= 20 and surname and len(surname) <= 20 and patronymic and len(patronymic) <= 20:
-            author = Author(name=name, surname=surname, patronymic=patronymic)
+        if name and len(name) <= 20 and surname and len(surname) <= 20:
+            if patronymic and len(patronymic) > 20:
+                return None
+
+            author = Author(name=name, surname=surname, patronymic=patronymic or None)
             author.save()
             return author
+        return None
 
     def to_dict(self):
         """

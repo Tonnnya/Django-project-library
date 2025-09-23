@@ -7,7 +7,7 @@ urlpatterns = [
     path('books_by_user/user/<int:user_id>/', views.books_by_user_view, name='books_by_user'),
 
     path('add', views.add_book_view, name='add_book'),
-    path('users/<int:user_id>/books/', views.user_books_view, name='user_books'),
+    path('users/<int:user_id>/book/', views.user_books_view, name='user_books'),
     path('', views.books_list_view, name='books_list_view'),
 
 ]

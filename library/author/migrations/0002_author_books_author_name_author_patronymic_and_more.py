@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='author',
-            name='books',
+            name='book',
             field=models.ManyToManyField(related_name='authors', to='book.book'),
         ),
         migrations.AddField(

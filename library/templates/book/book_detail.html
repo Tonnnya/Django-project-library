@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.name }} - Book Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <!-- Header with navigation -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0; line-height: 1.2;">
+                {{ book.name }}
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Book Details & Information
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'books_list_view' %}" class="btn btn-secondary">← Back to Books</a>
+            {% if user.is_librarian %}
+                <a href="#" class="btn btn-secondary">✏️ Edit Book</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main book information -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+        <!-- Left Column - Book Details -->
+        <div>
+            <!-- Book Cover Placeholder -->
+            <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 15px; padding: 3rem; text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📖</div>
+                <p style="color: #666; font-size: 0.9rem;">Book Cover Placeholder</p>
+            </div>
+
+            <!-- Availability Status -->
+            <div style="background: {% if book.count > 5 %}rgba(40, 167, 69, 0.1){% elif book.count > 0 %}rgba(255, 193, 7, 0.1){% else %}rgba(220, 53, 69, 0.1){% endif %};
+                        border: 1px solid {% if book.count > 5 %}rgba(40, 167, 69, 0.2){% elif book.count > 0 %}rgba(255, 193, 7, 0.2){% else %}rgba(220, 53, 69, 0.2){% endif %};
+                        border-radius: 15px; padding: 1.5rem; text-align: center;">
+                <h3 style="color: {% if book.count > 5 %}#28a745{% elif book.count > 0 %}#856404{% else %}#dc3545{% endif %}; margin: 0 0 0.5rem 0; font-size: 1.8rem;">
+                    {{ book.count }}
+                </h3>
+                <p style="color: #666; margin: 0; font-weight: 600;">
+                    {% if book.count > 5 %}
+                        📚 Available Copies
+                    {% elif book.count > 0 %}
+                        ⚠️ Limited Availability
+                    {% else %}
+                        ❌ Currently Unavailable
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Column - Details -->
+        <div>
+            <div style="background: rgba(255, 255, 255, 0.5); border-radius: 15px; padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.4rem; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
+                    📋 Book Information
+                </h3>
+
+                <div style="display: grid; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: start;">
+                        <strong style="color: #555;">📖 Title:</strong>
+                        <span style="color: #333;">{{ book.name }}</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: start;">
+                        <strong style="color: #555;">👥 Authors:</strong>
+                        <span style="color: #333;">
+                            {% for author in book.authors.all %}
+                                <span style="background: rgba(102, 126, 234, 0.1); padding: 0.3rem 0.8rem; border-radius: 15px; margin: 0.2rem; display: inline-block; font-size: 0.9rem;">
+                                    {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+                                </span>
+                            {% empty %}
+                                <em style="color: #999;">No authors listed</em>
+                            {% endfor %}
+                        </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: start;">
+                        <strong style="color: #555;">🔢 Book ID:</strong>
+                        <span style="color: #666; font-family: monospace;">#{{ book.id }}</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: start;">
+                        <strong style="color: #555;">📚 Copies:</strong>
+                        <span style="color: #333; font-weight: 600;">{{ book.count }} available</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div style="background: rgba(255, 255, 255, 0.5); border-radius: 15px; padding: 2rem;">
+                <h3 style="color: #333; margin: 0 0 1rem 0; font-size: 1.4rem;">📝 Description</h3>
+                {% if book.description %}
+                    <p style="color: #666; line-height: 1.6; margin: 0;">{{ book.description }}</p>
+                {% else %}
+                    <p style="color: #999; font-style: italic; margin: 0;">No description available for this book.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 2rem; border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1);">
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            {% if not user.is_librarian %}
+                {% if book.count > 0 %}
+                    <a href="#" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        📋 Order This Book
+                    </a>
+                    <a href="#" class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        ❤️ Add to Wishlist
+                    </a>
+                {% else %}
+                    <div style="text-align: center;">
+                        <p style="color: #dc3545; font-weight: 600; margin: 0 0 1rem 0;">
+                            ⚠️ This book is currently unavailable
+                        </p>
+                        <a href="#" class="btn btn-secondary" style="font-size: 1rem;">
+                            🔔 Notify When Available
+                        </a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Librarian Actions -->
+                <a href="#" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    ✏️ Edit Book
+                </a>
+                <a href="#" class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    📊 View Orders
+                </a>
+                <a href="#" class="btn" style="background: #dc3545; color: white; font-size: 1.1rem; padding: 1rem 2rem;">
+                    🗑️ Delete Book
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Related Books Section -->
+    <div style="margin-top: 3rem; padding-top: 3rem; border-top: 2px solid rgba(102, 126, 234, 0.1);">
+        <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.5rem; text-align: center;">
+            📚 Related Books
+        </h3>
+        <div style="text-align: center; color: #666; padding: 2rem;">
+            <p>Related books feature coming soon...</p>
+            <a href="{% url 'books_list_view' %}" class="btn btn-secondary">
+                🔍 Browse All Books
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 2rem;
+    }
+
+    div[style*="grid-template-columns: 120px 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem;
+    }
+
+    div[style*="display: flex"][style*="justify-content: center"] {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Hover effects for interactive elements */
+.card div:hover {
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
+}
+</style>
+{% endblock %}

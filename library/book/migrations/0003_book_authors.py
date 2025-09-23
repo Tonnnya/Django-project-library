@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='book',
             name='authors',
-            field=models.ManyToManyField(blank=True, related_name='books', to='author.author'),
+            field=models.ManyToManyField(blank=True, related_name='book', to='author.author'),
         ),
     ]

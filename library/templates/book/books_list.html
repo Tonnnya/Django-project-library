@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}All Books - Library System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                📚 Book Library
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Discover and order from our extensive collection
+            </p>
+        </div>
+        {% if user.is_librarian %}
+        <div>
+            <a href="{% url 'add_book' %}" class="btn btn-primary">➕ Add New Book</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Search and Filter Form -->
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 2rem; border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1); margin-bottom: 3rem;">
+        <form method="get" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="q" style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">🔍 Search by Title:</label>
+                <input type="text" id="q" name="q" value="{{ request.GET.q }}"
+                       placeholder="Enter book title..."
+                       style="padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; font-size: 1rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="author" style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">👨‍🎨 Filter by Author ID:</label>
+                <input type="text" id="author" name="author" value="{{ request.GET.author }}"
+                       placeholder="Author ID..."
+                       style="padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; font-size: 1rem;">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; white-space: nowrap;">
+                🔍 Search Books
+            </button>
+        </form>
+
+        {% if request.GET.q or request.GET.author %}
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'books_list_view' %}" class="btn btn-secondary" style="font-size: 0.9rem;">
+                ❌ Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Books List -->
+    {% if books %}
+    <div style="display: grid; gap: 1.5rem;">
+        {% for book in books %}
+        <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(102, 126, 234, 0.1); border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden;"
+             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.1)'; this.style.borderColor='rgba(102, 126, 234, 0.3)';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='rgba(102, 126, 234, 0.1)';">
+
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center;">
+                <div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: #333;">
+                        <a href="{% url 'book_detail' book.id %}"
+                           style="text-decoration: none; color: inherit; font-size: 1.3rem; font-weight: 600;">
+                            📖 {{ book.name }}
+                        </a>
+                    </h3>
+
+                    <p style="color: #666; margin: 0 0 1rem 0; line-height: 1.6;">
+                        {{ book.description|default:"No description available" }}
+                    </p>
+
+                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; font-size: 0.9rem; color: #888;">
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            👥 <strong>Authors:</strong>
+                            {% for author in book.authors.all %}
+                                {{ author.surname }} {{ author.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                No authors listed
+                            {% endfor %}
+                        </span>
+
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            📚 <strong>Available:</strong>
+                            <span style="color: {% if book.count > 5 %}#28a745{% elif book.count > 0 %}#ffc107{% else %}#dc3545{% endif %}; font-weight: 600;">
+                                {{ book.count }} copies
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 150px;">
+                    <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary" style="text-align: center; font-size: 0.9rem;">
+                        👁️ View Details
+                    </a>
+
+                    {% if not user.is_librarian %}
+                        {% if book.count > 0 %}
+                        <a href="#" class="btn btn-primary" style="text-align: center; font-size: 0.9rem;">
+                            📋 Order Book
+                        </a>
+                        {% else %}
+                        <span class="btn" style="background: #dc3545; color: white; text-align: center; font-size: 0.9rem; cursor: not-allowed;">
+                            ❌ Unavailable
+                        </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination or Load More could go here -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(102, 126, 234, 0.1);">
+        <p style="color: #666;">
+            Showing {{ books|length }} book{{ books|length|pluralize }}
+            {% if request.GET.q or request.GET.author %}
+                (filtered results)
+            {% endif %}
+        </p>
+    </div>
+
+    {% else %}
+    <!-- No Books Found -->
+    <div style="text-align: center; padding: 4rem 2rem; color: #666;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+        <h3 style="color: #999; margin-bottom: 1rem;">
+            {% if request.GET.q or request.GET.author %}
+                No books match your search criteria
+            {% else %}
+                No books available
+            {% endif %}
+        </h3>
+        <p style="margin-bottom: 2rem;">
+            {% if request.GET.q or request.GET.author %}
+                Try adjusting your search terms or clearing the filters.
+            {% else %}
+                The library collection is currently empty.
+            {% endif %}
+        </p>
+
+        {% if request.GET.q or request.GET.author %}
+            <a href="{% url 'books_list_view' %}" class="btn btn-primary">
+                🔄 Show All Books
+            </a>
+        {% endif %}
+
+        {% if user.is_librarian %}
+            <a href="{% url 'add_book' %}" class="btn btn-secondary" style="margin-left: 1rem;">
+                ➕ Add First Book
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    form[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+
+    div[style*="grid-template-columns: 1fr auto"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+
+    div[style*="display: flex"][style*="gap: 1.5rem"] {
+        flex-direction: column;
+        gap: 0.75rem !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,25 +1,284 @@
 {% extends "base.html" %}
 
-{% block title %}Create Author{% endblock %}
+{% block title %}Add New Author - Library System{% endblock %}
 
 {% block content %}
-    <h2>Create a New Author</h2>
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0;">
+    <div class="card" style="width: 100%; max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+            <h2 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.2rem; font-weight: 700; margin: 0;">
+                ✍️ Add New Author
+            </h2>
+            <a href="{% url 'authors_list' %}" class="btn btn-secondary">← Back to Authors</a>
+        </div>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(102, 126, 234, 0.1); margin-bottom: 2rem;">
+            <p style="color: #666; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">📝</span>
+                Fill in the author's information below. All fields marked with * are required.
+            </p>
+        </div>
 
-    <form method="post" action="{% url 'create_author' %}">
-        {% csrf_token %}
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" maxlength="20" required><br><br>
+        {% if error %}
+        <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.2); color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
 
-        <label for="surname">Surname:</label>
-        <input type="text" id="surname" name="surname" maxlength="20" required><br><br>
+        <form method="post" action="{% url 'create_author' %}">
+            {% csrf_token %}
 
-        <label for="patronymic">Patronymic:</label>
-        <input type="text" id="patronymic" name="patronymic" maxlength="20"><br><br>
+            <!-- Name Fields Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label for="name" style="color: #333; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        👤 First Name *
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           maxlength="20"
+                           required
+                           placeholder="Enter first name"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;"
+                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                           onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                </div>
 
-        <button type="submit">Create Author</button>
-    </form>
+                <div class="form-group">
+                    <label for="surname" style="color: #333; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        👨‍💼 Last Name *
+                    </label>
+                    <input type="text"
+                           id="surname"
+                           name="surname"
+                           maxlength="20"
+                           required
+                           placeholder="Enter last name"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;"
+                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                           onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                </div>
+            </div>
+
+            <!-- Patronymic Field -->
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="patronymic" style="color: #333; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    👨‍👦 Middle Name / Patronymic
+                    <span style="font-size: 0.8rem; color: #999; font-weight: normal;">(optional)</span>
+                </label>
+                <input type="text"
+                       id="patronymic"
+                       name="patronymic"
+                       maxlength="20"
+                       placeholder="Enter middle name or patronymic"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;"
+                       onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                       onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+            </div>
+
+            <!-- Preview Card -->
+            <div style="background: rgba(255, 255, 255, 0.5); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                <h4 style="color: #333; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                    👁️ Preview
+                </h4>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        ✍️
+                    </div>
+                    <div>
+                        <p style="color: #333; font-weight: 600; margin: 0;" id="preview-name">
+                            Enter author name to see preview
+                        </p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0;">Author</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="submit"
+                        class="btn btn-primary"
+                        style="padding: 1rem; font-size: 1.1rem; font-weight: 600;">
+                    ✨ Create Author
+                </button>
+                <a href="{% url 'authors_list' %}"
+                   class="btn btn-secondary"
+                   style="text-align: center; padding: 1rem; font-weight: 600;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #333;
+    border-color: #adb5bd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+// Live preview functionality
+function updatePreview() {
+    const name = document.getElementById('name').value.trim();
+    const surname = document.getElementById('surname').value.trim();
+    const patronymic = document.getElementById('patronymic').value.trim();
+
+    const previewElement = document.getElementById('preview-name');
+
+    if (name || surname || patronymic) {
+        let fullName = '';
+        if (surname) fullName += surname;
+        if (name) fullName += (fullName ? ' ' : '') + name;
+        if (patronymic) fullName += (fullName ? ' ' : '') + patronymic;
+
+        previewElement.textContent = fullName;
+        previewElement.style.color = '#333';
+    } else {
+        previewElement.textContent = 'Enter author name to see preview';
+        previewElement.style.color = '#999';
+    }
+}
+
+// Add event listeners for live preview
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('name').addEventListener('input', updatePreview);
+    document.getElementById('surname').addEventListener('input', updatePreview);
+    document.getElementById('patronymic').addEventListener('input', updatePreview);
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const surname = document.getElementById('surname').value.trim();
+
+        if (!name || !surname) {
+            e.preventDefault();
+            alert('Please fill in both first name and last name.');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '⏳ Creating Author...';
+        submitBtn.disabled = true;
+    });
+
+    // Character count indicators
+    const inputs = ['name', 'surname', 'patronymic'];
+    inputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        const maxLength = input.getAttribute('maxlength');
+
+        if (maxLength) {
+            const label = input.previousElementSibling;
+            const counter = document.createElement('span');
+            counter.style.float = 'right';
+            counter.style.fontSize = '0.8rem';
+            counter.style.color = '#999';
+            label.appendChild(counter);
+
+            function updateCounter() {
+                const remaining = maxLength - input.value.length;
+                counter.textContent = `${input.value.length}/${maxLength}`;
+                counter.style.color = remaining < 5 ? '#dc3545' : '#999';
+            }
+
+            input.addEventListener('input', updateCounter);
+            updateCounter();
+        }
+    });
+});
+</script>
 {% endblock %}

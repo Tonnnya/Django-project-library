@@ -20,7 +20,7 @@ class Book(models.Model):
     count = models.IntegerField(default=10)
     id = models.AutoField(primary_key=True)
 
-    authors = models.ManyToManyField('author.Author', blank=True, related_name='books')
+    authors = models.ManyToManyField('author.Author', blank=True, related_name='book')
 
 
     def __str__(self):
@@ -148,6 +148,6 @@ class Book(models.Model):
     @staticmethod
     def get_all():
         """
-        returns data for json request with QuerySet of all books
+        returns data for json request with QuerySet of all book
         """
         return list(Book.objects.all())

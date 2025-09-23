@@ -17,11 +17,11 @@ def books_list_view(request):
 
     search_query = request.GET.get("q")
     if search_query:
-        books = books.filter(name=search_query)
+        books = books.filter(name__icontains=search_query)
 
     author_id = request.GET.get("author")
     if author_id:
-        books = books.filter(author_id=author_id)
+        books = books.filter(authors__id=author_id)
 
     return render(request, "book/books_list.html", {"books": books})
 
@@ -35,7 +35,9 @@ def book_detail_view(request, book_id):
 def books_by_user_view(request, user_id):
     if request.user.role != 1:
         raise PermissionDenied
-    books = Book.objects.filter(user_id=user_id)
+    # books = Book.objects.filter(user_id=user_id)
+    books = Book.objects.all()
+
     return render(request, "book/books_by_user.html", {"books": books, "user_id": user_id})
 
 @librarian_required
@@ -44,13 +46,13 @@ def add_book_view(request):
         try:
             name = request.POST.get("name", "").strip()
             description = request.POST.get("description", "").strip()
-            count = request.POST.get("count", 10)
+            count = int(request.POST.get("count", 10))
             author_id = request.POST.get("authors")
 
             if not name:
                 messages.error(request, "Book name is required.")
-                return render(request, "books/book_form.html", {
-                    'author': Author.objects.all().order_by('surname', 'name'),
+                return render(request, "book/book_form.html", {
+                    'authors': Author.objects.all().order_by('surname', 'name'),
                     'form_data': {
                         'name': name,
                         'description': description,
@@ -61,11 +63,12 @@ def add_book_view(request):
             book = Book.objects.create(
                 name=name,
                 description=description,
-                count=10
+                count=count
             )
 
-            author = get_object_or_404(Author, id=author_id)
-            book.authors.add(author)
+            if author_id:
+                author = get_object_or_404(Author, id=author_id)
+                book.authors.add(author)
 
             messages.success(request, f"Book '{book.name}' created successfully.")
             return redirect("book_detail", book_id=book.id)
@@ -75,9 +78,9 @@ def add_book_view(request):
         except Exception as e:
             messages.error(request, f'Error adding book: {str(e)}')
 
-    author = Author.objects.all().order_by('name')
-    context = {'author': author}
-    return render(request, "books/book_form.html", context)
+    authors = Author.objects.all().order_by('name')
+    context = {'authors': authors}
+    return render(request, "book/book_form.html", context)
 
 
 @librarian_required
@@ -94,4 +97,4 @@ def user_books_view(request, user_id):
                'complete_order_count': 0,
                'total_order_count': len(all_orders),
                }
-    return render(request, "books/user_librarian_books.html", context)
+    return render(request, "book/user_librarian_books.html", context)
