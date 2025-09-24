@@ -1,76 +1,191 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}{% if book %}Edit Book{% else %}Add New Book{% endif %} - Library System{% endblock %}
+{% block title %}{% if is_edit %}Edit Book{% else %}Add New Book{% endif %} - Library System{% endblock %}
 
 {% block content %}
 <div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0;">
-    <div class="card" style="width: 100%; max-width: 700px;">
+    <div class="card" style="width: 100%; max-width: 800px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
             <h2 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.2rem; font-weight: 700; margin: 0;">
-                {% if False %}✏️ Edit Book{% else %}➕ Add New Book{% endif %}
+                {% if is_edit %}✏️ Edit Book{% else %}➕ Add New Book{% endif %}
             </h2>
-            <a href="{% url 'books_list_view' %}" class="btn btn-secondary">← Back to Books</a>
+            <a href="{% if is_edit %}{% url 'book_detail' book.id %}{% else %}{% url 'books_list_view' %}{% endif %}" class="btn btn-secondary">← Back</a>
         </div>
 
-        <form method="post" action="{% url 'add_book' %}">
+        <form method="post" action="{% if is_edit %}{% url 'edit_book' book.id %}{% else %}{% url 'add_book' %}{% endif %}" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Name (замість Title) -->
-            <div class="form-group">
-                <label for="name">📖 Book Name *</label>
-                <input type="text" id="name" name="name" required
-                       value="{{ book.name|default:'' }}"
-                       maxlength="128"
-                       placeholder="Enter the book name">
-            </div>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem; margin-bottom: 2rem;">
+                <!-- Left Column - Form Fields -->
+                <div>
+                    <!-- Book Name -->
+                    <div class="form-group">
+                        <label for="name">📖 Book Name *</label>
+                        <input type="text" id="name" name="name" required
+                               value="{% if is_edit %}{{ book.name }}{% else %}{{ form_data.name|default:'' }}{% endif %}"
+                               maxlength="128"
+                               placeholder="Enter the book name">
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.3rem;">
+                            <span id="name-counter">0</span>/128 characters
+                        </div>
+                    </div>
 
-            <!-- Authors (множинний вибір) -->
-            <div class="form-group">
-                <label for="authors">👨‍🎨 Authors *</label>
-                <select id="authors" name="authors" required>
-                    <option value="">Select an author</option>
-                    {% for author in author %}
-                        <option value="{{ author.id }}">
-                            {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+                    <!-- Authors -->
+                    <div class="form-group">
+                        <label for="authors">👨‍🎨 Authors *</label>
+                        {% if is_edit %}
+                        <select id="authors" name="authors" multiple style="height: 120px;">
+                            {% for author in authors %}
+                                <option value="{{ author.id }}" {% if author.id in selected_authors %}selected{% endif %}>
+                                    {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.3rem;">
+                            Hold Ctrl/Cmd to select multiple authors
+                        </div>
+                        {% else %}
+                        <select id="authors" name="authors" required>
+                            <option value="">Select an author</option>
+                            {% for author in authors %}
+                                <option value="{{ author.id }}">
+                                    {{ author.surname }} {{ author.name }}{% if author.patronymic %} {{ author.patronymic }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
 
-            <!-- Count -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div class="form-group">
-                    <label for="count">📚 Available Count *</label>
-                    <input type="number" id="count" name="count" required
-                           value="{{ book.count|default:10 }}"
-                           min="0" placeholder="10">
+                    <!-- Count and Additional Info -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label for="count">📚 Available Count *</label>
+                            <input type="number" id="count" name="count" required
+                                   value="{% if is_edit %}{{ book.count }}{% else %}{{ form_data.count|default:10 }}{% endif %}"
+                                   min="0" placeholder="10">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">📝 Description</label>
+                        <textarea id="description" name="description" rows="4"
+                                  maxlength="256"
+                                  placeholder="Enter book description (optional, max 256 characters)">{% if is_edit %}{{ book.description }}{% else %}{{ form_data.description|default:'' }}{% endif %}</textarea>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.3rem;">
+                            <span id="desc-counter">0</span>/256 characters
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <!-- Поле для майбутнього розширення -->
-                    <label for="future_field">🔮 Future Field</label>
-                    <input type="text" id="future_field" name="future_field"
-                           placeholder="Reserved for future use" disabled>
+                <!-- Right Column - Cover Image -->
+                <div>
+                    <div class="form-group">
+                        <label>🖼️ Book Cover</label>
+
+                        <!-- Current Cover Preview -->
+                        <div id="cover-preview" style="border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 15px; padding: 2rem; text-align: center; margin-bottom: 1rem; background: rgba(102, 126, 234, 0.05);">
+                            {% if is_edit and book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" alt="Current cover"
+                                 style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 1rem;">
+                            <p style="color: #666; font-size: 0.9rem; margin: 0;">New cover preview</p>
+                `;
+
+                previewCover.innerHTML = `<img src="${e.target.result}" alt="Cover" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Initialize counters and preview
+    updateCounter(nameInput, 'name-counter');
+    updateCounter(descInput, 'desc-counter');
+    updatePreview();
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const name = nameInput.value.trim();
+        const authors = document.getElementById('authors').value;
+
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter a book name.');
+            return false;
+        }
+
+        if (!authors) {
+            e.preventDefault();
+            alert('Please select at least one author.');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Processing...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}; margin: 0;">Current cover</p>
+                            {% else %}
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
+                            <p style="color: #666; font-size: 0.9rem; margin: 0;">No cover uploaded</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- File Input -->
+                        <input type="file" id="cover_image" name="cover_image" accept="image/*"
+                               style="width: 100%; padding: 0.75rem; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 10px; background: white;">
+
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
+                            Supported: JPG, PNG, GIF (max 5MB)
+                        </div>
+
+                        {% if is_edit and book.cover_image %}
+                        <div style="margin-top: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #666;">
+                                <input type="checkbox" id="remove_cover" name="remove_cover" value="1">
+                                Remove current cover
+                            </label>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="description">📝 Description</label>
-                <textarea id="description" name="description" rows="4"
-                          maxlength="256"
-                          placeholder="Enter book description (optional, max 256 characters)">{{ book.description|default:'' }}</textarea>
+            <!-- Preview Section -->
+            <div style="background: rgba(255, 255, 255, 0.5); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 2rem;">
+                <h4 style="color: #333; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                    👁️ Live Preview
+                </h4>
+                <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center;">
+                    <div id="preview-cover" style="width: 60px; height: 60px; border-radius: 10px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        📖
+                    </div>
+                    <div>
+                        <h5 id="preview-title" style="color: #333; margin: 0 0 0.3rem 0;">Enter book details to see preview</h5>
+                        <p id="preview-description" style="color: #666; font-size: 0.9rem; margin: 0;">No description</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div id="preview-count" style="color: #667eea; font-size: 1.2rem; font-weight: 600;">10</div>
+                        <div style="color: #666; font-size: 0.8rem;">copies</div>
+                    </div>
+                </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2.5rem;">
+            <!-- Action Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1.1rem; font-weight: 600;">
-                    {% if False %}💾 Update Book{% else %}✨ Add Book{% endif %}
+                    {% if is_edit %}💾 Update Book{% else %}✨ Create Book{% endif %}
                 </button>
-                <a href="{% url 'books_list_view' %}" class="btn btn-secondary" style="text-align: center; padding: 1rem; font-weight: 600;">
+                <a href="{% if is_edit %}{% url 'book_detail' book.id %}{% else %}{% url 'books_list_view' %}{% endif %}"
+                   class="btn btn-secondary" style="text-align: center; padding: 1rem; font-weight: 600;">
                     Cancel
                 </a>
             </div>
         </form>
-
     </div>
 </div>
 
@@ -78,9 +193,10 @@
 .card {
     animation: slideInUp 0.6s ease-out;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 @keyframes slideInUp {
@@ -103,6 +219,7 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: #333;
+    font-size: 1rem;
 }
 
 .form-group input,
@@ -110,10 +227,11 @@
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid #e1e5e9;
-    border-radius: 8px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .form-group input:focus,
@@ -122,6 +240,7 @@
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 select[multiple] {
@@ -136,7 +255,7 @@ textarea {
 .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: 600;
     text-decoration: none;
     display: inline-block;
@@ -147,11 +266,12 @@ textarea {
 .btn-primary {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
@@ -163,6 +283,7 @@ textarea {
 .btn-secondary:hover {
     background: #e9ecef;
     color: #333;
+    border-color: #adb5bd;
 }
 
 /* Responsive adjustments */
@@ -171,10 +292,73 @@ textarea {
         margin: 1rem;
         padding: 1.5rem;
     }
-    
+
+    div[style*="grid-template-columns: 1fr 300px"] {
+        grid-template-columns: 1fr !important;
+    }
+
     div[style*="grid-template-columns: 1fr 1fr"] {
         grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+
+    div[style*="grid-template-columns: auto 1fr auto"] {
+        grid-template-columns: 1fr !important;
+        text-align: center;
     }
 }
 </style>
-{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const nameInput = document.getElementById('name');
+    const descInput = document.getElementById('description');
+    const countInput = document.getElementById('count');
+    const coverInput = document.getElementById('cover_image');
+
+    function updateCounter(input, counterId) {
+        const counter = document.getElementById(counterId);
+        const maxLength = input.getAttribute('maxlength');
+        if (counter && maxLength) {
+            counter.textContent = input.value.length;
+            counter.style.color = input.value.length > maxLength * 0.8 ? '#dc3545' : '#666';
+        }
+    }
+
+    function updatePreview() {
+        const title = nameInput.value.trim() || 'Enter book details to see preview';
+        const description = descInput.value.trim() || 'No description';
+        const count = countInput.value || '10';
+
+        document.getElementById('preview-title').textContent = title;
+        document.getElementById('preview-description').textContent = description;
+        document.getElementById('preview-count').textContent = count;
+    }
+
+    // Event listeners
+    nameInput.addEventListener('input', () => {
+        updateCounter(nameInput, 'name-counter');
+        updatePreview();
+    });
+
+    descInput.addEventListener('input', () => {
+        updateCounter(descInput, 'desc-counter');
+        updatePreview();
+    });
+
+    countInput.addEventListener('input', updatePreview);
+
+    // Cover image preview
+    coverInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('cover-preview');
+                const previewCover = document.getElementById('preview-cover');
+
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Cover preview"
+                         style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 1rem;">
+                    <p style="color: #666; font-size: 0.9rem

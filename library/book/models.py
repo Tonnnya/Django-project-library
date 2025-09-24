@@ -1,5 +1,8 @@
 from django.db import models
 
+from library import book
+from library.author.models import Author
+
 
 class Book(models.Model):
     """
@@ -20,8 +23,9 @@ class Book(models.Model):
     count = models.IntegerField(default=10)
     id = models.AutoField(primary_key=True)
 
-    authors = models.ManyToManyField('author.Author', blank=True, related_name='book')
+    cover_image = models.ImageField(upload_to='book_cover/', blank=True, null=True)
 
+    authors = models.ManyToManyField('author.Author', blank=True, related_name='book')
 
     def __str__(self):
         """
@@ -54,11 +58,18 @@ class Book(models.Model):
         """
         if Book.get_by_id(book_id) is None:
             return False
+
+        if book.cover_image:
+            try:
+                book.cover_image.delete(save=False)
+            except ValueError as e:
+                f'Error while deleting cover image: {e}'
+
         Book.objects.get(id=book_id).delete()
         return True
 
     @staticmethod
-    def create(name, description, count=10, authors=None):
+    def create(name, description, count=10, authors=None, cover_image=None):
         """
         param name: Describes name of the book
         type name: str max_length=128
@@ -77,7 +88,9 @@ class Book(models.Model):
         book.name = name
         book.description = description
         book.count = count
-        if (authors is not None):
+        book.cover_image = cover_image
+
+        if authors is not None:
             for elem in authors:
                 book.authors.add(elem)
         book.save()
@@ -100,10 +113,11 @@ class Book(models.Model):
             'name': self.name,
             'description': self.description,
             'count': self.count,
-            'authors': [author.id for author in self.authors.all()]
+            'authors': [author.id for author in self.authors.all()],
+            'cover_image': self.cover_image.url if self.cover_image else None,
         }
 
-    def update(self, name=None, description=None, count=None):
+    def update(self, name=None, description=None, count=None, cover_image=None):
         """
         Updates book in the database with the specified parameters.\n
         param name: Describes name of the book
@@ -122,6 +136,14 @@ class Book(models.Model):
 
         if count is not None:
             self.count = count
+
+        if cover_image is not None:
+            if self.cover_image:
+                try:
+                    self.cover_image.delete(save=False)
+                except ValueError as e:
+                    f'Error while deleting cover image: {e}'
+            self.cover_image = cover_image
 
         self.save()
 
