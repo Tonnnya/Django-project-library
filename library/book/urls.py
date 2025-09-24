@@ -10,4 +10,8 @@ urlpatterns = [
     path('users/<int:user_id>/book/', views.user_books_view, name='user_books'),
     path('', views.books_list_view, name='books_list_view'),
 
+    # CRUD
+    path('add/', views.add_book_view, name='add_book'),
+    path('edit/<int:book_id>/', views.edit_book_view, name='edit_book'),
+    path('delete/<int:book_id>/', views.delete_book_view, name='delete_book'),
 ]

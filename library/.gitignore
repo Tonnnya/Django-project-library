@@ -1,0 +1,11 @@
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+.DS_Store

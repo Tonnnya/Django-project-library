@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Book "{{ book.name }}" - Library System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0;">
+    <div class="card" style="width: 100%; max-width: 600px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="background: rgba(220, 53, 69, 0.1); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem;">
+                ⚠️
+            </div>
+            <h2 style="color: #dc3545; font-size: 1.8rem; font-weight: 700; margin: 0 0 1rem 0;">
+                Confirm Book Deletion
+            </h2>
+            <p style="color: #666; font-size: 1.1rem;">
+                This action cannot be undone
+            </p>
+        </div>
+
+        <!-- Book Info -->
+        <div style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(220, 53, 69, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: center;">
+                {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" alt="{{ book.name }}" 
+                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+                {% else %}
+                <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 10px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    📖
+                </div>
+                {% endif %}
+                
+                <div>
+                    <h3 style="color: #333; margin: 0 0 0.5rem 0; font-size: 1.3rem;">
+                        "{{ book.name }}"
+                    </h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; color: #666;">
+                        <div>
+                            <strong>Authors:</strong>
+                            {% for author in book.authors.all %}
+                                {{ author.surname }} {{ author.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                No authors listed
+                            {% endfor %}
+                        </div>
+                        
+                        <div>
+                            <strong>Available copies:</strong> {{ book.count }}
+                        </div>
+                        
+                        <div>
+                            <strong>Book ID:</strong> #{{ book.id }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.2); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 1.5rem;">⚠️</div>
+                <div>
+                    <h4 style="color: #856404; margin: 0 0 0.5rem 0;">Warning</h4>
+                    <p style="color: #856404; margin: 0; font-size: 0.9rem;">
+                        Deleting this book will permanently remove it from the library system. 
+                        {% if book.cover_image %}The book cover image will also be deleted.{% endif %}
+                        This action cannot be undone.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="post" style="margin: 0;">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="submit" 
+                        class="btn" 
+                        style="background: #dc3545; color: white; padding: 1rem; font-size: 1.1rem; font-weight: 600; border-radius: 10px; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='#c82333'; this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.background='#dc3545'; this.style.transform='translateY(0)'">
+                    🗑️ Yes, Delete Book
+                </button>
+                
+                <a href="{% url 'book_detail' book.id %}" 
+                   class="btn btn-secondary" 
+                   style="text-align: center; padding: 1rem; font-weight: 600; border-radius: 10px;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Additional Info -->
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.1);">
+            <p style="color: #999; font-size: 0.9rem;">
+                Need to edit instead? <a href="{% url 'edit_book' book.id %}" style="color: #667eea; text-decoration: none;">Edit this book</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #333;
+    border-color: #adb5bd;
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    div[style*="grid-template-columns: auto 1fr"] {
+        grid-template-columns: 1fr !important;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
