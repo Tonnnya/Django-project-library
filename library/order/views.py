@@ -43,8 +43,18 @@ def my_orders_view(request):
     active_orders = Order.objects.filter(user=request.user, end_at__isnull=True).select_related('book')
     returned_orders = Order.objects.filter(user=request.user, end_at__isnull=False).select_related('book')
 
-    overdue_count
-    return render(request, "order/my_orders.html", {"orders": orders})
+    overdue_count = sum(1 for order in active_orders if order.is_overdue)
+
+    context = {
+        'active_orders': active_orders,
+        'returned_orders': returned_orders,
+        'stats': {
+            'active_count': active_orders.count(),
+            'returned_count': returned_orders.count(),
+            'overdue_count': overdue_count,
+        }
+    }
+    return render(request, "order/my_orders.html", context)
 
 @login_required
 def create_order_view(request, book_id):
