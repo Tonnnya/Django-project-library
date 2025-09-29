@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Close Order - Library System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0;">
+    <div class="card" style="width: 100%; max-width: 700px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="background: rgba(102, 126, 234, 0.1); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem;">
+                📋
+            </div>
+            <h2 style="color: #667eea; font-size: 1.8rem; font-weight: 700; margin: 0 0 1rem 0;">
+                Close Order
+            </h2>
+            <p style="color: #666; font-size: 1.1rem;">
+                Mark book as returned by user
+            </p>
+        </div>
+
+        <!-- Order Details -->
+        <div style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(102, 126, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 2rem;">
+            <h3 style="color: #333; margin: 0 0 1.5rem 0; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
+                Order Information
+            </h3>
+            
+            <div style="display: grid; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Order ID:</strong>
+                    <span style="color: #333;">#{{ order.id }}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">User:</strong>
+                    <span style="color: #333;">{{ order.user.email }}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Book:</strong>
+                    <span style="color: #333;">{{ order.book.name }}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Borrowed:</strong>
+                    <span style="color: #333;">{{ order.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Due date:</strong>
+                    <span style="color: {% if order.is_overdue %}#dc3545{% else %}#28a745{% endif %}; font-weight: 600;">
+                        {{ order.plated_end_at|date:"M d, Y" }}
+                    </span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Status:</strong>
+                    {% if order.is_overdue %}
+                        <span style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; font-weight: 600; display: inline-block; width: fit-content;">
+                            ⚠️ Overdue ({{ order.days_remaining|add:"-1"|multiply:"-1" }} days)
+                        </span>
+                    {% else %}
+                        <span style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; font-weight: 600; display: inline-block; width: fit-content;">
+                            ✅ Active ({{ order.days_remaining }} days remaining)
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Book will be returned info -->
+        <div style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.2); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: start; gap: 1rem;">
+                <div style="font-size: 1.5rem;">ℹ️</div>
+                <div>
+                    <h4 style="color: #155724; margin: 0 0 0.5rem 0;">What happens when you close this order:</h4>
+                    <ul style="color: #155724; margin: 0; font-size: 0.9rem; padding-left: 1.2rem;">
+                        <li>Book will be marked as returned</li>
+                        <li>Available book count will increase by 1</li>
+                        <li>Return date will be set to current time</li>
+                        <li>Order status will change to "Returned"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="post" style="margin: 0;">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="submit" 
+                        class="btn btn-primary" 
+                        style="padding: 1rem; font-size: 1.1rem; font-weight: 600;">
+                    ✅ Confirm & Close Order
+                </button>
+                
+                <a href="{% url 'all_orders' %}" 
+                   class="btn btn-secondary" 
+                   style="text-align: center; padding: 1rem; font-weight: 600;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+@media (max-width: 768px) {
+    div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}

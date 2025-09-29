@@ -426,136 +426,141 @@
     </style>
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="bg-animation">
-        <div class="floating-shapes">
-            <div class="shape"></div>
-            <div class="shape"></div>
-            <div class="shape"></div>
-            <div class="shape"></div>
+<!-- Animated Background -->
+<div class="bg-animation">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+</div>
+<div class="particles" id="particles"></div>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <a href="{% url 'home' %}" class="logo">📚 LibrarySystem</a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+            <span>Welcome, {{ user.first_name|default:user.email }}!</span>
+            {% if user.is_librarian %}
+            <span class="role-badge role-librarian">👨‍💼 Librarian</span>
+            <a href="{% url 'librarian_account' %}">Dashboard</a>
+            <a href="{% url 'all_orders' %}">All Orders</a>
+
+            {% else %}
+            <span class="role-badge role-visitor">📖 Visitor</span>
+            <a href="{% url 'visitor_account' %}">Dashboard</a>
+            <a href="{% url 'my_orders' %}">My Orders</a>
+
+            {% endif %}
+            <a href="{% url 'books_list_view' %}">Books</a>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+            <a href="{% url 'registration_form' %}" class="btn btn-primary">Register</a>
+            {% endif %}
         </div>
     </div>
-    <div class="particles" id="particles"></div>
+</nav>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="navbar-content">
-            <a href="{% url 'home' %}" class="logo">📚 LibrarySystem</a>
-            <div class="nav-links">
-                {% if user.is_authenticated %}
-                    <span>Welcome, {{ user.first_name|default:user.email }}!</span>
-                    {% if user.is_librarian %}
-                        <span class="role-badge role-librarian">👨‍💼 Librarian</span>
-                        <a href="{% url 'librarian_account' %}">Dashboard</a>
-                    {% else %}
-                        <span class="role-badge role-visitor">📖 Visitor</span>
-                        <a href="{% url 'visitor_account' %}">Dashboard</a>
-                    {% endif %}
-                    <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
-                    <a href="{% url 'registration_form' %}" class="btn btn-primary">Register</a>
-                {% endif %}
-            </div>
+<div class="container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
         </div>
-    </nav>
-
-    <div class="container">
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="message {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% block content %}
-        {% endblock %}
+        {% endfor %}
     </div>
+    {% endif %}
 
-    <script>
-        // Particle system
-        function createParticles() {
-            const container = document.getElementById('particles');
-            if (!container) return;
+    {% block content %}
+    {% endblock %}
+</div>
 
-            const particleCount = window.innerWidth < 768 ? 20 : 40;
+<script>
+    // Particle system
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
 
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 8 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
-                container.appendChild(particle);
-            }
+        const particleCount = window.innerWidth < 768 ? 20 : 40;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            container.appendChild(particle);
         }
+    }
 
-        // Mouse movement effect
-        function setupMouseEffect() {
-            let ticking = false;
+    // Mouse movement effect
+    function setupMouseEffect() {
+        let ticking = false;
 
-            document.addEventListener('mousemove', (e) => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        const shapes = document.querySelectorAll('.shape');
-                        const mouseX = e.clientX / window.innerWidth;
-                        const mouseY = e.clientY / window.innerHeight;
+        document.addEventListener('mousemove', (e) => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const shapes = document.querySelectorAll('.shape');
+                    const mouseX = e.clientX / window.innerWidth;
+                    const mouseY = e.clientY / window.innerHeight;
 
-                        shapes.forEach((shape, index) => {
-                            const speed = (index + 1) * 0.5;
-                            const x = mouseX * speed * 30;
-                            const y = mouseY * speed * 30;
-                            shape.style.transform = `translate(${x}px, ${y}px)`;
-                        });
-                        ticking = false;
+                    shapes.forEach((shape, index) => {
+                        const speed = (index + 1) * 0.5;
+                        const x = mouseX * speed * 30;
+                        const y = mouseY * speed * 30;
+                        shape.style.transform = `translate(${x}px, ${y}px)`;
                     });
-                    ticking = true;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    }
+
+    // Button hover effects
+    function setupButtonEffects() {
+        document.querySelectorAll('.btn, .dashboard-card').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                if (this.classList.contains('btn')) {
+                    this.style.transform = 'translateY(-3px) scale(1.02)';
                 }
             });
-        }
 
-        // Button hover effects
-        function setupButtonEffects() {
-            document.querySelectorAll('.btn, .dashboard-card').forEach(element => {
-                element.addEventListener('mouseenter', function() {
-                    if (this.classList.contains('btn')) {
-                        this.style.transform = 'translateY(-3px) scale(1.02)';
-                    }
-                });
-
-                element.addEventListener('mouseleave', function() {
-                    if (this.classList.contains('btn')) {
-                        this.style.transform = 'translateY(0) scale(1)';
-                    }
-                });
+            element.addEventListener('mouseleave', function() {
+                if (this.classList.contains('btn')) {
+                    this.style.transform = 'translateY(0) scale(1)';
+                }
             });
-        }
+        });
+    }
 
-        // Initialize effects
-        document.addEventListener('DOMContentLoaded', function() {
+    // Initialize effects
+    document.addEventListener('DOMContentLoaded', function() {
+        createParticles();
+        setupMouseEffect();
+        setupButtonEffects();
+
+        // Loading animation
+        document.body.style.opacity = '0';
+        setTimeout(() => {
+            document.body.style.transition = 'opacity 0.5s ease';
+            document.body.style.opacity = '1';
+        }, 100);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('particles');
+        if (container) {
+            container.innerHTML = '';
             createParticles();
-            setupMouseEffect();
-            setupButtonEffects();
-
-            // Loading animation
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                document.body.style.transition = 'opacity 0.5s ease';
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const container = document.getElementById('particles');
-            if (container) {
-                container.innerHTML = '';
-                createParticles();
-            }
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>

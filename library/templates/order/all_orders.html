@@ -1,41 +1,180 @@
 {% extends "base.html" %}
 
-{% block title %}All Orders{% endblock %}
+{% block title %}All Orders - Library System{% endblock %}
 
 {% block content %}
-<h2>📋 All Orders</h2>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                📋 All Orders
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Manage library orders and returns
+            </p>
+        </div>
+    </div>
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-                {{ message }}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    <!-- Statistics -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <h3 style="color: #667eea; font-size: 2rem; margin: 0; font-weight: 700;">{{ stats.total_active }}</h3>
+            <p style="color: #666; margin: 0.5rem 0 0 0;">Active Orders</p>
+        </div>
 
-<ul>
-    {% for order in orders %}
-        <li style="margin-bottom: 1rem;">
-            <strong>Order {{ order.id }}</strong> —
-            <em>{{ order.book.name }}</em> —
-            by {{ order.user.username }}
+        <div style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(244, 67, 54, 0.1)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <h3 style="color: #dc3545; font-size: 2rem; margin: 0; font-weight: 700;">{{ stats.total_overdue }}</h3>
+            <p style="color: #666; margin: 0.5rem 0 0 0;">Overdue</p>
+        </div>
 
-            {% if order.end_at %}
-                ✅ Closed at {{ order.end_at }}
-            {% else %}
-                🟢 Open
-                <form method="post" action="{% url 'close_order' order.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" style="margin-left: 1rem;">
-                        ❌ Close Order
-                    </button>
-                </form>
-            {% endif %}
-        </li>
-    {% empty %}
-        <li>No orders.</li>
-    {% endfor %}
-</ul>
+        <div style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(56, 142, 60, 0.1)); padding: 1.5rem; border-radius: 15px; text-align: center;">
+            <h3 style="color: #28a745; font-size: 2rem; margin: 0; font-weight: 700;">{{ stats.total_returned }}</h3>
+            <p style="color: #666; margin: 0.5rem 0 0 0;">Returned</p>
+        </div>
+    </div>
+
+    <!-- Overdue Orders -->
+    {% if overdue_orders %}
+    <div style="margin-bottom: 3rem;">
+        <h3 style="color: #dc3545; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            ⚠️ Overdue Orders ({{ overdue_orders|length }})
+        </h3>
+
+        <div style="display: grid; gap: 1rem;">
+            {% for order in overdue_orders %}
+            <div style="background: rgba(220, 53, 69, 0.05); border-left: 4px solid #dc3545; border-radius: 10px; padding: 1.5rem;">
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #333;">{{ order.book.name }}</h4>
+                        <div style="font-size: 0.9rem; color: #666;">
+                            <strong>User:</strong> {{ order.user.email }} |
+                            <strong>Due:</strong> {{ order.plated_end_at|date:"M d, Y" }} |
+                            <strong>Overdue by:</strong> <span style="color: #dc3545; font-weight: 600;">{{ order.days_remaining|add:"-1"|multiply:"-1" }} days</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'close_order' order.id %}" class="btn btn-danger" style="font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+                        Close Order
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Orders -->
+    {% if active_orders %}
+    <div style="margin-bottom: 3rem;">
+        <h3 style="color: #333; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            📚 Active Orders ({{ stats.total_active }})
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden;">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="padding: 1rem; text-align: left;">User</th>
+                        <th style="padding: 1rem; text-align: left;">Book</th>
+                        <th style="padding: 1rem; text-align: left;">Borrowed</th>
+                        <th style="padding: 1rem; text-align: left;">Due Date</th>
+                        <th style="padding: 1rem; text-align: left;">Status</th>
+                        <th style="padding: 1rem; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in active_orders %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 1rem;">{{ order.user.email }}</td>
+                        <td style="padding: 1rem;"><strong>{{ order.book.name }}</strong></td>
+                        <td style="padding: 1rem; color: #666;">{{ order.created_at|date:"M d, Y" }}</td>
+                        <td style="padding: 1rem; color: {% if order.is_overdue %}#dc3545{% else %}#666{% endif %};">
+                            {{ order.plated_end_at|date:"M d, Y" }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if order.is_overdue %}
+                                <span style="background: #dc3545; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">
+                                    ⚠️ Overdue
+                                </span>
+                            {% elif order.days_remaining <= 3 %}
+                                <span style="background: #ffc107; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">
+                                    ⏰ Due Soon
+                                </span>
+                            {% else %}
+                                <span style="background: #28a745; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">
+                                    ✅ Active
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <a href="{% url 'close_order' order.id %}" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                                Close
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Returned Orders -->
+    {% if returned_orders %}
+    <div>
+        <h3 style="color: #333; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            ✅ Recently Returned (Last 50)
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px;">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="padding: 1rem; text-align: left;">User</th>
+                        <th style="padding: 1rem; text-align: left;">Book</th>
+                        <th style="padding: 1rem; text-align: left;">Borrowed</th>
+                        <th style="padding: 1rem; text-align: left;">Due Date</th>
+                        <th style="padding: 1rem; text-align: left;">Returned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in returned_orders %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 1rem; color: #666;">{{ order.user.email }}</td>
+                        <td style="padding: 1rem;">{{ order.book.name }}</td>
+                        <td style="padding: 1rem; color: #666;">{{ order.created_at|date:"M d" }}</td>
+                        <td style="padding: 1rem; color: #666;">{{ order.plated_end_at|date:"M d" }}</td>
+                        <td style="padding: 1rem;">
+                            <span style="color: #28a745; font-weight: 600;">{{ order.end_at|date:"M d, Y" }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not active_orders and not returned_orders %}
+    <div style="text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+        <h3 style="color: #999;">No Orders Yet</h3>
+        <p style="color: #666;">No orders have been created yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card { animation: slideInUp 0.6s ease-out; }
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.btn { padding: 0.75rem 1.5rem; border: none; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-block; cursor: pointer; transition: all 0.3s ease; }
+.btn-secondary { background: #f8f9fa; color: #666; border: 2px solid #e1e5e9; }
+.btn-danger { background: #dc3545; color: white; }
+@media (max-width: 768px) {
+    table { font-size: 0.8rem; }
+    th, td { padding: 0.5rem !important; }
+}
+</style>
 {% endblock %}
