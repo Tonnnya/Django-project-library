@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                Order #{{ order.id }}
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Detailed order information
+            </p>
+        </div>
+        <div>
+            {% if user.role == 1 %}
+                <a href="{% url 'all_orders' %}" class="btn btn-secondary">← Back to All Orders</a>
+            {% else %}
+                <a href="{% url 'my_orders' %}" class="btn btn-secondary">← My Orders</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+        <!-- Left Column -->
+        <div>
+            <div style="background: rgba(255, 255, 255, 0.5); border-radius: 15px; padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.4rem; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
+                    📋 Order Details
+                </h3>
+
+                <div style="display: grid; gap: 1rem;">
+                    <div>
+                        <strong style="color: #555;">Order ID:</strong>
+                        <span style="color: #333;">#{{ order.id }}</span>
+                    </div>
+
+                    <div>
+                        <strong style="color: #555;">User:</strong>
+                        <span style="color: #333;">{{ order.user.email }}</span>
+                    </div>
+
+                    <div>
+                        <strong style="color: #555;">Created:</strong>
+                        <span style="color: #333;">{{ order.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+
+                    <div>
+                        <strong style="color: #555;">Due Date:</strong>
+                        <span style="color: {% if order.is_overdue %}#dc3545{% else %}#28a745{% endif %}; font-weight: 600;">
+                            {{ order.plated_end_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    {% if order.end_at %}
+                    <div>
+                        <strong style="color: #555;">Returned:</strong>
+                        <span style="color: #28a745; font-weight: 600;">{{ order.end_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <strong style="color: #555;">Status:</strong>
+                        {% if order.end_at %}
+                            <span style="background: #28a745; color: white;
