@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Orders for {{ target_user.email }} - Library System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                User's Orders
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                Orders for: <strong>{{ target_user.email }}</strong>
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'all_orders' %}" class="btn btn-secondary">← Back to All Orders</a>
+        </div>
+    </div>
+
+    <!-- User Info -->
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 2rem; border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1); margin-bottom: 3rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: rgba(102, 126, 234, 0.1); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                👤
+            </div>
+            <div>
+                <h3 style="color: #333; margin: 0 0 0.5rem 0;">{{ target_user.email }}</h3>
+                <p style="color: #666; margin: 0;">
+                    {% if target_user.role == 1 %}Librarian{% else %}Visitor{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; border-radius: 10px; text-align: center;">
+                <h4 style="color: #667eea; margin: 0; font-size: 1.5rem;">{{ stats.active_count }}</h4>
+                <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 0.9rem;">Active Orders</p>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; border-radius: 10px; text-align: center;">
+                <h4 style="color: #dc3545; margin: 0; font-size: 1.5rem;">{{ stats.overdue_count }}</h4>
+                <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 0.9rem;">Overdue</p>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; border-radius: 10px; text-align: center;">
+                <h4 style="color: #28a745; margin: 0; font-size: 1.5rem;">{{ stats.returned_count }}</h4>
+                <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 0.9rem;">Returned</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Orders -->
+    {% if active_orders %}
+    <div style="margin-bottom: 3rem;">
+        <h3 style="color: #333; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            📚 Active Orders ({{ active_orders|length }})
+        </h3>
+
+        <div style="display: grid; gap: 1.5rem;">
+            {% for order in active_orders %}
+            <div style="background: rgba(255, 255, 255, 0.8); border-left: 4px solid {% if order.is_overdue %}#dc3545{% elif order.days_remaining <= 3 %}#ffc107{% else %}#28a745{% endif %}; border-radius: 15px; padding: 1.5rem;">
+                <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;">
+                    {% if order.book.cover_image %}
+                    <img src="{{ order.book.cover_image.url }}" alt="{{ order.book.name }}"
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                    {% else %}
+                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 8px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        📖
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.2rem;">{{ order.book.name }}</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; font-size: 0.9rem; color: #666;">
+                            <div><strong>Borrowed:</strong> {{ order.created_at|date:"M d, Y" }}</div>
+                            <div><strong>Due:</strong> <span style="color: {% if order.is_overdue %}#dc3545{% else %}#666{% endif %};">{{ order.plated_end_at|date:"M d, Y" }}</span></div>
+                            <div>
+                                <strong>Status:</strong>
+                                {% if order.is_overdue %}
+                                    <span style="color: #dc3545; font-weight: 600;">⚠️ Overdue</span>
+                                {% elif order.days_remaining <= 3 %}
+                                    <span style="color: #ffc107; font-weight: 600;">⏰ Due Soon</span>
+                                {% else %}
+                                    <span style="color: #28a745; font-weight: 600;">✅ Active</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="{% url 'book_detail' order.book.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; text-align: center;">
+                            View Book
+                        </a>
+                        <a href="{% url 'close_order' order.id %}" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem; text-align: center;">
+                            Close Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Returned Orders -->
+    {% if returned_orders %}
+    <div>
+        <h3 style="color: #333; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            ✅ Order History ({{ returned_orders|length }})
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Book</th>
+                        <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Borrowed</th>
+                        <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Due Date</th>
+                        <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Returned</th>
+                        <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #dee2e6;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in returned_orders %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 1rem;"><strong>{{ order.book.name }}</strong></td>
+                        <td style="padding: 1rem; color: #666;">{{ order.created_at|date:"M d, Y" }}</td>
+                        <td style="padding: 1rem; color: #666;">{{ order.plated_end_at|date:"M d, Y" }}</td>
+                        <td style="padding: 1rem;"><span style="color: #28a745; font-weight: 600;">{{ order.end_at|date:"M d, Y" }}</span></td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <a href="{% url 'book_detail' order.book.id %}" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                                View Book
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Orders -->
+    {% if not active_orders and not returned_orders %}
+    <div style="text-align: center; padding: 4rem 2rem; color: #666;">
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 20px; padding: 3rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+            <h3 style="color: #999; margin-bottom: 1rem;">No Orders Found</h3>
+            <p>This user hasn't made any orders yet.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card { animation: slideInUp 0.6s ease-out; }
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.btn { padding: 0.75rem 1.5rem; border: none; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-block; cursor: pointer; transition: all 0.3s ease; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.btn-secondary { background: #f8f9fa; color: #666; border: 2px solid #e1e5e9; }
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: auto 1fr auto"] { grid-template-columns: 1fr !important; text-align: center; }
+    table { font-size: 0.8rem; }
+}
+</style>
+{% endblock %}
