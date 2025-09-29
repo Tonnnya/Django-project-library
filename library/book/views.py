@@ -26,7 +26,7 @@ def books_list_view(request):
     if author_id:
         books = books.filter(authors__id=author_id)
 
-    return render(request, "book/books_list.html", {"book": books})
+    return render(request, "book/books_list.html", {"books": books})
 
 
 @login_required
@@ -160,12 +160,15 @@ def edit_book_view(request, book_id):
             book.save()
 
             book.authors.clear()
-            for author_id in author_id:
+
+            author_id = request.POST.get("authors")
+            if author_id:
+                book.authors.clear()
                 try:
-                    author = Author.objects.get(id=author_id)
+                    author = Author.objects.get(id=int(author_id))
                     book.authors.add(author)
                 except (Author.DoesNotExist, ValueError):
-                    continue
+                    pass
 
             messages.success(request, f"Book '{book.name}' updated successfully.")
             return redirect("book_detail", book_id=book.id)
@@ -178,7 +181,7 @@ def edit_book_view(request, book_id):
 
     context = {
         'book': book,
-        'authors': selected_authors,
+        'authors': authors,
         'selected_authors': selected_authors,
         'is_edit': True
     }
@@ -200,5 +203,5 @@ def delete_book_view(request, book_id):
 
         book.delete()
         messages.success(request, f"Book '{book_name}' deleted successfully.")
-        return redirect('book_list_view')
+        return redirect("books_list_view")
     return render(request, "book/delete_confirm.html", {'book': book})

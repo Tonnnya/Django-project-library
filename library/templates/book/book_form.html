@@ -56,14 +56,12 @@
                         {% endif %}
                     </div>
 
-                    <!-- Count and Additional Info -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div class="form-group">
-                            <label for="count">📚 Available Count *</label>
-                            <input type="number" id="count" name="count" required
-                                   value="{% if is_edit %}{{ book.count }}{% else %}{{ form_data.count|default:10 }}{% endif %}"
-                                   min="0" placeholder="10">
-                        </div>
+                    <!-- Count -->
+                    <div class="form-group">
+                        <label for="count">📚 Available Count *</label>
+                        <input type="number" id="count" name="count" required
+                               value="{% if is_edit %}{{ book.count }}{% else %}{{ form_data.count|default:10 }}{% endif %}"
+                               min="0" placeholder="10">
                     </div>
 
                     <!-- Description -->
@@ -88,47 +86,7 @@
                             {% if is_edit and book.cover_image %}
                             <img src="{{ book.cover_image.url }}" alt="Current cover"
                                  style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 1rem;">
-                            <p style="color: #666; font-size: 0.9rem; margin: 0;">New cover preview</p>
-                `;
-
-                previewCover.innerHTML = `<img src="${e.target.result}" alt="Cover" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Initialize counters and preview
-    updateCounter(nameInput, 'name-counter');
-    updateCounter(descInput, 'desc-counter');
-    updatePreview();
-
-    // Form validation
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        const name = nameInput.value.trim();
-        const authors = document.getElementById('authors').value;
-
-        if (!name) {
-            e.preventDefault();
-            alert('Please enter a book name.');
-            return false;
-        }
-
-        if (!authors) {
-            e.preventDefault();
-            alert('Please select at least one author.');
-            return false;
-        }
-
-        // Show loading state
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '⏳ Processing...';
-        submitBtn.disabled = true;
-    });
-});
-</script>
-{% endblock %}; margin: 0;">Current cover</p>
+                            <p style="color: #666; font-size: 0.9rem; margin: 0;">Current cover</p>
                             {% else %}
                             <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
                             <p style="color: #666; font-size: 0.9rem; margin: 0;">No cover uploaded</p>
@@ -186,6 +144,7 @@
                 </a>
             </div>
         </form>
+
     </div>
 </div>
 
@@ -353,6 +312,13 @@ document.addEventListener('DOMContentLoaded', function() {
     coverInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            // Перевірка розміру файлу (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                this.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 const preview = document.getElementById('cover-preview');
@@ -361,5 +327,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 preview.innerHTML = `
                     <img src="${e.target.result}" alt="Cover preview"
                          style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 1rem;">
-                    <p style="color: #666; font-size: 0.9rem
+                    <p style="color: #666; font-size: 0.9rem; margin: 0;">New cover preview</p>
+                `;
 
+                previewCover.innerHTML = `<img src="${e.target.result}" alt="Cover" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Initialize counters and preview
+    updateCounter(nameInput, 'name-counter');
+    updateCounter(descInput, 'desc-counter');
+    updatePreview();
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const name = nameInput.value.trim();
+        const authors = document.getElementById('authors').value;
+
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter a book name.');
+            nameInput.focus();
+            return false;
+        }
+
+        if (!authors) {
+            e.preventDefault();
+            alert('Please select at least one author.');
+            document.getElementById('authors').focus();
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Processing...';
+        submitBtn.disabled = true;
+
+        // Prevent double submission
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}

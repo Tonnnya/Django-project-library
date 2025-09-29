@@ -1,8 +1,7 @@
 from django.db import models
 
-from library import book
-from library.author.models import Author
-
+# from library import book
+from author.models import Author
 
 class Book(models.Model):
     """
@@ -25,7 +24,7 @@ class Book(models.Model):
 
     cover_image = models.ImageField(upload_to='book_cover/', blank=True, null=True)
 
-    authors = models.ManyToManyField('author.Author', blank=True, related_name='book')
+    authors = models.ManyToManyField('author.Author', blank=True, related_name='books')
 
     def __str__(self):
         """

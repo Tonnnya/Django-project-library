@@ -12,13 +12,38 @@ from book.models import Book
 @login_required
 def all_orders_view(request):
     if request.user.role != 1:
-        raise PermissionDenied
-    orders = Order.objects.all()
-    return render(request, "order/all_orders.html", {"orders": orders})
+        raise PermissionDenied('Only librarian can view all orders')
+
+    active_orders = Order.get_active_orders().select_related('user', 'book')
+    returned_orders = Order.get_returned_orders().select_related('user', 'book')[:50]
+    overdue_orders = [order for order in active_orders if order.is_overdue()]
+
+    total_active = active_orders.count()
+    total_overdue = len(overdue_orders)
+    total_returned = returned_orders.count()
+
+    context = {
+        'active_orders': active_orders,
+        'returned_orders': returned_orders,
+        'overdue_orders': overdue_orders,
+        'stats': {
+            'total_active': total_active,
+            'total_overdue': total_overdue,
+            'total_returned': total_returned,
+        }
+    }
+
+    return render(request, 'order/all_orders.html', context)
 
 @login_required
 def my_orders_view(request):
-    orders = Order.objects.filter(user=request.user)
+    if request.user.role != 0:
+        raise PermissionDenied('Only visitors have personal orders')
+
+    active_orders = Order.objects.filter(user=request.user, end_at__isnull=True).select_related('book')
+    returned_orders = Order.objects.filter(user=request.user, end_at__isnull=False).select_related('book')
+
+    overdue_count
     return render(request, "order/my_orders.html", {"orders": orders})
 
 @login_required

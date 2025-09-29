@@ -31,7 +31,7 @@
                 <h3 style="color: #28a745; font-size: 2rem; margin: 0; font-weight: 700;">
                     {% with books_count=0 %}
                         {% for author in authors %}
-                            {% with books_count=books_count|add:author.book.count %}{% endwith %}
+                            {% with books_count=books_count|add:author.books.count %}{% endwith %}
                         {% endfor %}
                         {{ books_count|default:"0" }}
                     {% endwith %}
