@@ -16,7 +16,7 @@ def all_orders_view(request):
 
     active_orders = Order.get_active_orders().select_related('user', 'book')
     returned_orders = Order.get_returned_orders().select_related('user', 'book')[:50]
-    overdue_orders = [order for order in active_orders if order.is_overdue()]
+    overdue_orders = [order for order in active_orders if order.is_overdue]
 
     total_active = active_orders.count()
     total_overdue = len(overdue_orders)
