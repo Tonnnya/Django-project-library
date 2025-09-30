@@ -63,4 +63,161 @@
                     <div>
                         <strong style="color: #555;">Status:</strong>
                         {% if order.end_at %}
-                            <span style="background: #28a745; color: white;
+                            <span style="background: #28a745; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; display: inline-block;">
+                                ✅ Returned
+                            </span>
+                        {% elif order.is_overdue %}
+                            <span style="background: #dc3545; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; display: inline-block;">
+                                ⚠️ Overdue
+                            </span>
+                        {% else %}
+                            <span style="background: #667eea; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; display: inline-block;">
+                                📚 Active
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if order.is_active %}
+                    <div>
+                        <strong style="color: #555;">Days Remaining:</strong>
+                        <span style="color: {% if order.days_remaining <= 3 %}#ffc107{% else %}#28a745{% endif %}; font-weight: 600;">
+                            {{ order.days_remaining }} days
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Book Info -->
+        <div>
+            <div style="background: rgba(255, 255, 255, 0.5); border-radius: 15px; padding: 2rem;">
+                <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.4rem; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
+                    📖 Book Information
+                </h3>
+
+                {% if order.book.cover_image %}
+                <img src="{{ order.book.cover_image.url }}" alt="{{ order.book.name }}"
+                     style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                {% else %}
+                <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border: 2px dashed rgba(102, 126, 234, 0.2); border-radius: 10px; padding: 3rem; text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 3rem;">📖</div>
+                    <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0 0 0;">No cover available</p>
+                </div>
+                {% endif %}
+
+                <h4 style="color: #333; margin: 0 0 1rem 0; font-size: 1.2rem;">{{ order.book.name }}</h4>
+
+                <div style="display: grid; gap: 0.5rem; font-size: 0.9rem; color: #666;">
+                    <div>
+                        <strong>Authors:</strong>
+                        {% for author in order.book.authors.all %}
+                            {{ author.surname }} {{ author.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No authors listed
+                        {% endfor %}
+                    </div>
+
+                    {% if order.book.description %}
+                    <div style="margin-top: 0.5rem;">
+                        <strong>Description:</strong>
+                        <p style="margin: 0.3rem 0 0 0; color: #555; line-height: 1.5;">{{ order.book.description|truncatewords:30 }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div style="margin-top: 0.5rem;">
+                        <strong>Currently Available:</strong> {{ order.book.count }} copies
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <a href="{% url 'book_detail' order.book.id %}" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                        View Book Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    {% if can_return and order.is_active %}
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); padding: 2rem; border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1); text-align: center;">
+        <h3 style="color: #333; margin: 0 0 1rem 0;">Available Actions</h3>
+        {% if user.role == 1 %}
+            <a href="{% url 'close_order' order.id %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                🔄 Close Order
+            </a>
+        {% else %}
+            <a href="{% url 'return_book' order.id %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                🔄 Return Book
+            </a>
+        {% endif %}
+    </div>
+    {% elif order.end_at %}
+    <div style="background: rgba(40, 167, 69, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(40, 167, 69, 0.2); text-align: center;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+        <p style="color: #28a745; font-weight: 600; margin: 0;">This order has been completed</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #333;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 2rem;
+    }
+}
+</style>
+{% endblock %}
