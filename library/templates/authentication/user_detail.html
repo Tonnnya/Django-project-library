@@ -4,137 +4,202 @@
 
 {% block content %}
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="color: #333;">
-            👤 User Details
-            {% if is_own_profile %}
-                <span style="color: #007bff; font-size: 0.8em;">(Your Profile)</span>
-            {% endif %}
-        </h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
         <div>
+            <h1 style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2.5rem; font-weight: 700; margin: 0;">
+                👤 User Profile
+            </h1>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 0.5rem;">
+                {% if is_own_profile %}
+                    Your personal profile
+                {% else %}
+                    Profile for {{ user_to_view.email }}
+                {% endif %}
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             {% if user.is_librarian %}
                 <a href="{% url 'all_users' %}" class="btn btn-secondary">← Back to All Users</a>
+            {% else %}
+                <a href="{% url 'visitor_account' %}" class="btn btn-secondary">← Dashboard</a>
             {% endif %}
-            <a href="{% url 'visitor_account' %}" class="btn btn-secondary">← Dashboard</a>
         </div>
     </div>
 
+    <!-- User Info Grid -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px;">
-            <h3 style="color: #333; margin-bottom: 1rem; border-bottom: 2px solid #007bff; padding-bottom: 0.5rem;">
+        <!-- Basic Information -->
+        <div style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 15px; border: 1px solid rgba(102, 126, 234, 0.1);">
+            <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.3rem; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
                 📋 Basic Information
             </h3>
-            <div style="display: grid; gap: 0.8rem;">
-                <div>
-                    <strong>User ID:</strong> #{{ user_to_view.id }}
+            <div style="display: grid; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">User ID:</strong>
+                    <span style="color: #333; font-family: monospace;">#{{ user_to_view.id }}</span>
                 </div>
-                <div>
-                    <strong>Email:</strong> {{ user_to_view.email }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Email:</strong>
+                    <span style="color: #333;">{{ user_to_view.email }}</span>
                 </div>
-                <div>
-                    <strong>Full Name:</strong>
-                    {{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">First Name:</strong>
+                    <span style="color: #333;">{{ user_to_view.first_name|default:"—" }}</span>
                 </div>
-                <div>
-                    <strong>First Name:</strong> {{ user_to_view.first_name|default:"—" }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Middle Name:</strong>
+                    <span style="color: #333;">{{ user_to_view.middle_name|default:"—" }}</span>
                 </div>
-                <div>
-                    <strong>Middle Name:</strong> {{ user_to_view.middle_name|default:"—" }}
-                </div>
-                <div>
-                    <strong>Last Name:</strong> {{ user_to_view.last_name|default:"—" }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Last Name:</strong>
+                    <span style="color: #333;">{{ user_to_view.last_name|default:"—" }}</span>
                 </div>
             </div>
         </div>
 
-        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px;">
-            <h3 style="color: #333; margin-bottom: 1rem; border-bottom: 2px solid #28a745; padding-bottom: 0.5rem;">
+        <!-- Account Settings -->
+        <div style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 15px; border: 1px solid rgba(40, 167, 69, 0.1);">
+            <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.3rem; border-bottom: 2px solid rgba(40, 167, 69, 0.1); padding-bottom: 0.5rem;">
                 ⚙️ Account Settings
             </h3>
-            <div style="display: grid; gap: 0.8rem;">
-                <div>
-                    <strong>Role:</strong>
-                    {% if user_to_view.is_librarian %}
-                        <span style="background: #7b1fa2; color: white; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.9rem;">
+            <div style="display: grid; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: center;">
+                    <strong style="color: #555;">Role:</strong>
+                    {% if user_to_view.role == 1 %}
+                        <span style="background: rgba(123, 31, 162, 0.1); color: #7b1fa2; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; display: inline-block; width: fit-content;">
                             👨‍💼 Librarian
                         </span>
                     {% else %}
-                        <span style="background: #388e3c; color: white; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.9rem;">
+                        <span style="background: rgba(56, 142, 60, 0.1); color: #388e3c; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; display: inline-block; width: fit-content;">
                             📖 Visitor
                         </span>
                     {% endif %}
                 </div>
-                <div>
-                    <strong>Status:</strong>
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: center;">
+                    <strong style="color: #555;">Status:</strong>
                     {% if user_to_view.is_active %}
-                        <span style="color: #28a745; font-weight: bold;">● Active</span>
+                        <span style="color: #28a745; font-weight: 600;">● Active</span>
                     {% else %}
-                        <span style="color: #dc3545; font-weight: bold;">● Inactive</span>
+                        <span style="color: #dc3545; font-weight: 600;">● Inactive</span>
                     {% endif %}
                 </div>
-                <div>
-                    <strong>Staff Access:</strong> {{ user_to_view.is_staff|yesno:"Yes,No" }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Staff Access:</strong>
+                    <span style="color: #333;">{{ user_to_view.is_staff|yesno:"Yes,No" }}</span>
                 </div>
-                <div>
-                    <strong>Superuser:</strong> {{ user_to_view.is_superuser|yesno:"Yes,No" }}
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem;">
+                    <strong style="color: #555;">Superuser:</strong>
+                    <span style="color: #333;">{{ user_to_view.is_superuser|yesno:"Yes,No" }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
-        <h3 style="color: #333; margin-bottom: 1rem; border-bottom: 2px solid #ffc107; padding-bottom: 0.5rem;">
+    <!-- Timeline -->
+    <div style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255, 193, 7, 0.1); margin-bottom: 2rem;">
+        <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.3rem; border-bottom: 2px solid rgba(255, 193, 7, 0.1); padding-bottom: 0.5rem;">
             🕒 Timeline
         </h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div>
-                <strong>Account Created:</strong><br>
-                <span style="color: #666;">{{ user_to_view.created_at|date:"F d, Y \a\t H:i" }}</span>
+                <strong style="color: #555; display: block; margin-bottom: 0.5rem;">Account Created:</strong>
+                <span style="color: #666; font-size: 1.1rem;">{{ user_to_view.created_at|date:"F d, Y \a\t H:i" }}</span>
             </div>
             <div>
-                <strong>Last Updated:</strong><br>
-                <span style="color: #666;">{{ user_to_view.updated_at|date:"F d, Y \a\t H:i" }}</span>
+                <strong style="color: #555; display: block; margin-bottom: 0.5rem;">Last Updated:</strong>
+                <span style="color: #666; font-size: 1.1rem;">{{ user_to_view.updated_at|date:"F d, Y \a\t H:i" }}</span>
             </div>
         </div>
     </div>
 
-    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px;">
-        <h3 style="color: #333; margin-bottom: 1rem; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem;">
-            📊 Activity Statistics
+    <!-- Activity Statistics -->
+    <div style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 15px; border: 1px solid rgba(102, 126, 234, 0.1); margin-bottom: 2rem;">
+        <h3 style="color: #333; margin: 0 0 1.5rem 0; font-size: 1.3rem; border-bottom: 2px solid rgba(102, 126, 234, 0.1); padding-bottom: 0.5rem;">
+            📊 Order Statistics
         </h3>
-        <div style="color: #666; font-style: italic;">
-            📝 Order statistics will be displayed here once the Orders module is implemented.
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: #667eea; font-size: 2rem; font-weight: 700;">{{ order_stats.total_orders }}</h4>
+                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Total Orders</p>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(56, 142, 60, 0.1)); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: #28a745; font-size: 2rem; font-weight: 700;">{{ order_stats.active_orders }}</h4>
+                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Active Orders</p>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1)); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: #ffc107; font-size: 2rem; font-weight: 700;">{{ order_stats.completed_orders }}</h4>
+                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Completed</p>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(244, 67, 54, 0.1)); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: #dc3545; font-size: 2rem; font-weight: 700;">{{ order_stats.overdue_orders }}</h4>
+                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Overdue</p>
+            </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; opacity: 0.5;">
-            <div style="text-align: center; padding: 1rem; background: white; border-radius: 5px;">
-                <h4 style="margin: 0; color: #007bff;">0</h4>
-                <p style="margin: 0; font-size: 0.9rem;">Total Orders</p>
+        <!-- Recent Orders -->
+        {% if recent_orders %}
+        <h4 style="color: #333; margin: 1.5rem 0 1rem 0; font-size: 1.1rem;">Recent Orders</h4>
+        <div style="display: grid; gap: 1rem;">
+            {% for order in recent_orders %}
+            <div style="background: white; padding: 1rem; border-radius: 10px; border: 1px solid #eee; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                <div>
+                    <strong style="color: #333;">{{ order.book.name }}</strong>
+                    <div style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
+                        {{ order.created_at|date:"M d, Y" }} •
+                        {% if order.end_at %}
+                            <span style="color: #28a745;">Returned</span>
+                        {% elif order.is_overdue %}
+                            <span style="color: #dc3545;">Overdue</span>
+                        {% else %}
+                            <span style="color: #667eea;">Active</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    View
+                </a>
             </div>
-            <div style="text-align: center; padding: 1rem; background: white; border-radius: 5px;">
-                <h4 style="margin: 0; color: #28a745;">0</h4>
-                <p style="margin: 0; font-size: 0.9rem;">Completed</p>
-            </div>
-            <div style="text-align: center; padding: 1rem; background: white; border-radius: 5px;">
-                <h4 style="margin: 0; color: #ffc107;">0</h4>
-                <p style="margin: 0; font-size: 0.9rem;">Active</p>
-            </div>
+            {% endfor %}
         </div>
+        {% endif %}
+
+        <!-- View All Orders Button -->
+        {% if order_stats.total_orders > 0 %}
+        <div style="text-align: center; margin-top: 1.5rem;">
+            {% if user.is_librarian %}
+                <a href="{% url 'user_orders' user_to_view.id %}" class="btn btn-primary">
+                    View All Orders
+                </a>
+            {% else %}
+                <a href="{% url 'my_orders' %}" class="btn btn-primary">
+                    View My Orders
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
+    <!-- Librarian Actions -->
     {% if user.is_librarian and not is_own_profile %}
-    <div style="margin-top: 2rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
-        <strong>Administrative Actions:</strong>
-        <div style="margin-top: 1rem;">
-            <button class="btn btn-secondary" style="margin-right: 0.5rem;" onclick="alert('Feature coming soon!')">
-                📝 Edit User
+    <div style="background: rgba(255, 193, 7, 0.1); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255, 193, 7, 0.2);">
+        <h3 style="color: #856404; margin: 0 0 1rem 0;">🔧 Administrative Actions</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'user_orders' user_to_view.id %}" class="btn btn-primary">
+                📋 View Orders
+            </a>
+            <button class="btn btn-secondary" onclick="alert('Feature coming soon!')">
+                ✏️ Edit User
             </button>
             {% if user_to_view.is_active %}
-                <button class="btn btn-danger" onclick="alert('Feature coming soon!')">
+                <button class="btn btn-danger" onclick="if(confirm('Are you sure you want to deactivate this user?')) { alert('Feature coming soon!'); }">
                     🚫 Deactivate User
                 </button>
             {% else %}
-                <button class="btn btn-primary" onclick="alert('Feature coming soon!')">
+                <button class="btn" style="background: #28a745; color: white;" onclick="if(confirm('Are you sure you want to activate this user?')) { alert('Feature coming soon!'); }">
                     ✅ Activate User
                 </button>
             {% endif %}
@@ -142,4 +207,62 @@
     </div>
     {% endif %}
 </div>
+
+<style>
+.card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    div[style*="grid-template-columns: 120px 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem;
+    }
+}
+</style>
 {% endblock %}
