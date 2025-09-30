@@ -1,7 +1,9 @@
-from django.db import models, DataError
+from django.db import models, DataError, transaction
 
 from authentication.models import CustomUser
 from book.models import Book
+from django.utils import timezone
+from datetime import timedelta
 
 
 class Order(models.Model):
@@ -99,12 +101,12 @@ class Order(models.Model):
             existing_order = Order.objects.filter(
                 user=user,
                 book=book,
-            end_at__isnull=True).first()
+                end_at__isnull=True).first()
 
             if existing_order:
                 raise ValueError('User already has an active order for this book')
 
-            with models.transation.atomic():
+            with transaction.atomic():
                 order = Order(
                     user=user,
                     book=book,
@@ -136,7 +138,7 @@ class Order(models.Model):
 
         if end_at is not None:
             if self.end_at is None and end_at is not None:
-                with models.transation.atomic():
+                with transaction.atomic():
                     self.end_at = end_at
                     self.book.count += 1
                     self.book.save()
@@ -169,14 +171,13 @@ class Order(models.Model):
         """Get all returned orders"""
         return Order.objects.filter(end_at__isnull=False)
 
-
     @staticmethod
     def delete_by_id(order_id):
         try:
             order = Order.objects.get(pk=order_id)
 
             if order.is_active:
-                with models.transation.atomic():
+                with transaction.atomic():
                     order.book.count += 1
                     order.book.save()
                     order.delete()
