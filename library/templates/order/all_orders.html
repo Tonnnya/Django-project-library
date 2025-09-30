@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load mathfilters %}
 {% block title %}All Orders - Library System{% endblock %}
 
 {% block content %}
@@ -49,7 +49,7 @@
                         <div style="font-size: 0.9rem; color: #666;">
                             <strong>User:</strong> {{ order.user.email }} |
                             <strong>Due:</strong> {{ order.plated_end_at|date:"M d, Y" }} |
-                            <strong>Overdue by:</strong> <span style="color: #dc3545; font-weight: 600;">{{ order.days_remaining|add:"-1"|multiply:"-1" }} days</span>
+                            <strong>Overdue by:</strong> <span style="color: #dc3545; font-weight: 600;">{{ order.days_remaining|add:"-1"|mul:"-1" }} days</span>
                         </div>
                     </div>
                     <a href="{% url 'close_order' order.id %}" class="btn btn-danger" style="font-size: 0.9rem; padding: 0.6rem 1.2rem;">
