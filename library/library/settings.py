@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'book',
     'order',
     'mathfilters',
+    'channels'
 ]
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
@@ -187,3 +188,14 @@ STATICFILES_DIRS = [
 # Максимальний розмір файлу (5MB)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+ASGI_APPLICATION = 'library.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
