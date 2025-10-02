@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from .models import CustomUser
+from order.models import Order
+
 
 
 def librarian_required(view_function):
@@ -63,15 +65,34 @@ def all_users_view(request):
 @login_required
 def user_detail_view(request, user_id):
     user_to_view = get_object_or_404(CustomUser, id=user_id)
+    is_own_profile = (request.user.id == user_id)
 
-    if not request.user.is_librarian() and request.user.id != user_id:
-        messages.error(request, 'You can only view your own account.')
-        return redirect('visitor_account')
+    if not is_own_profile and request.user.role != 1:
+        raise PermissionDenied('You can only see your own profiles.')
 
+    # if not request.user.is_librarian() and request.user.id != user_id:
+    #     messages.error(request, 'You can only view your own account.')
+    #     return redirect('visitor_account')
+
+    all_orders = Order.objects.filter(user=user_to_view)
+    active_orders = all_orders.filter(end_at__isnull=True)
+    completed_orders = all_orders.filter(end_at__isnull=False)
+    overdue_orders = [order for order in active_orders if order.is_overdue]
+
+    recent_orders = all_orders.select_related('book').order_by('-created_at')[:5]
+
+    order_stats = {
+        'total_orders': all_orders.count(),
+        'active_orders': active_orders.count(),
+        'completed_orders': completed_orders.count(),
+        'overdue_orders': len(overdue_orders),
+    }
     context = {
         'user_to_view': user_to_view,
-        'is_own_profile': request.user.id == user_id,
+        'is_own_profile': is_own_profile,
         'can_edit': request.user.is_librarian() or request.user.id == user_id,
+        'order_stats': order_stats,
+        'recent_orders': recent_orders,
     }
 
     return render(request, 'authentication/user_detail.html', context)
