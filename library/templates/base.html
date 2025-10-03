@@ -443,6 +443,44 @@
         <a href="{% url 'home' %}" class="logo">📚 LibrarySystem</a>
         <div class="nav-links">
             {% if user.is_authenticated %}
+            <script>
+                const notificationSocket = new WebSocket(
+                    'ws://' + window.location.host + '/ws/notifications/'
+                );
+
+                notificationSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+
+                    // Показати сповіщення
+                    if (data.type === 'order_notification') {
+                        showNotification(data.message);
+                    }
+                };
+
+                function showNotification(message) {
+                    // Створити сповіщення на сторінці
+                    const notification = document.createElement('div');
+                    notification.className = 'notification';
+                    notification.innerHTML = message;
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 80px;
+                        right: 20px;
+                        background: #667eea;
+                        color: white;
+                        padding: 1rem 1.5rem;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        z-index: 9999;
+                        animation: slideIn 0.3s ease;
+                    `;
+                    document.body.appendChild(notification);
+
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 5000);
+                }
+            </script>
             <span>Welcome, {{ user.first_name|default:user.email }}!</span>
             {% if user.is_librarian %}
             <span class="role-badge role-librarian">👨‍💼 Librarian</span>
