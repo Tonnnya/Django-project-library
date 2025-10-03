@@ -89,8 +89,18 @@ def create_order_view(request, book_id):
         'existing_order': existing_order,
         'due_date': (timezone.now() + timedelta(days=14)).date()
     }
-
     return render(request, 'order/create_order.html', context)
+
+    if order:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)('librarians',{
+            'type': 'order_notification',
+            'message': f'New order created by {request.user.email}',
+            'order_id': order.id,
+        })
+        messages.success(request, f'Successfully ordered {book.name}.')
+        return redirect('my_orders')
+
 
 
 @login_required
