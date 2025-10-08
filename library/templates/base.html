@@ -443,44 +443,6 @@
         <a href="{% url 'home' %}" class="logo">📚 LibrarySystem</a>
         <div class="nav-links">
             {% if user.is_authenticated %}
-            <script>
-                const notificationSocket = new WebSocket(
-                    'ws://' + window.location.host + '/ws/notifications/'
-                );
-
-                notificationSocket.onmessage = function(e) {
-                    const data = JSON.parse(e.data);
-
-                    // Показати сповіщення
-                    if (data.type === 'order_notification') {
-                        showNotification(data.message);
-                    }
-                };
-
-                function showNotification(message) {
-                    // Створити сповіщення на сторінці
-                    const notification = document.createElement('div');
-                    notification.className = 'notification';
-                    notification.innerHTML = message;
-                    notification.style.cssText = `
-                        position: fixed;
-                        top: 80px;
-                        right: 20px;
-                        background: #667eea;
-                        color: white;
-                        padding: 1rem 1.5rem;
-                        border-radius: 10px;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                        z-index: 9999;
-                        animation: slideIn 0.3s ease;
-                    `;
-                    document.body.appendChild(notification);
-
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 5000);
-                }
-            </script>
             <span>Welcome, {{ user.first_name|default:user.email }}!</span>
             {% if user.is_librarian %}
             <span class="role-badge role-librarian">👨‍💼 Librarian</span>
@@ -600,5 +562,73 @@
         }
     });
 </script>
+{% if user.is_authenticated %}
+<script>
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const notificationSocket = new WebSocket(
+        protocol + '//' + window.location.host + '/ws/notifications/'
+    );
+
+    notificationSocket.onopen = function(e) {
+        console.log('WebSocket connected');
+    };
+
+    notificationSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('Received:', data);
+
+        if (data.type === 'order_notification') {
+            showNotification(data.message);
+        }
+    };
+
+    notificationSocket.onerror = function(e) {
+        console.error('WebSocket error:', e);
+    };
+
+    notificationSocket.onclose = function(e) {
+        console.log('WebSocket closed:', e);
+    };
+
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <strong>📢 Notification</strong><br>
+            ${message}
+        `;
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            min-width: 300px;
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+</script>
+
+<style>
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+</style>
+{% endif %}
+
 </body>
 </html>
