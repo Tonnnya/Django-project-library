@@ -55,16 +55,17 @@ class Book(models.Model):
         :type book_id: int
         :return: True if object existed in the db and was removed or False if it didn't exist
         """
-        if Book.get_by_id(book_id) is None:
+        book = Book.get_by_id(book_id)
+        if book is None:
             return False
 
         if book.cover_image:
             try:
                 book.cover_image.delete(save=False)
             except ValueError as e:
-                f'Error while deleting cover image: {e}'
+                print(f'Error while deleting cover image: {e}')
 
-        Book.objects.get(id=book_id).delete()
+        book.delete()
         return True
 
     @staticmethod

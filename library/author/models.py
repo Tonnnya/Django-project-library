@@ -46,7 +46,7 @@ class Author(models.Model):
         # return  Author.get_object_or_404()
         try:
             return Author.objects.get(pk=author_id)
-        except:
+        except Author.DoesNotExist:
             return None
 
     @staticmethod
@@ -60,7 +60,7 @@ class Author(models.Model):
             author = Author.objects.get(pk=author_id)
             author.delete()
             return True
-        except:
+        except Author.DoesNotExist:
             return False
 
     @staticmethod
@@ -94,7 +94,12 @@ class Author(models.Model):
         |   'patronymic': 'ln',
         | }
         """
-        # return self.__dict__
+        return {
+            'id': self.id,
+            'name': self.name,
+            'surname': self.surname,
+            'patronymic': self.patronymic,
+        }
 
     def update(self,
                name=None,

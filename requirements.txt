@@ -1,9 +1,14 @@
 asgiref==3.9.1
 attrs==25.3.0
 certifi==2025.8.3
+channels==4.0.0
+channels-redis==4.2.0
 Django==5.2.6
+django-mathfilters==1.0.0
 djangorestframework==3.16.1
 drf-nested-routers==0.95.0
+Pillow==11.1.0
+python-decouple==3.8
 h11==0.16.0
 idna==3.10
 iniconfig==2.1.0

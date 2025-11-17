@@ -1,5 +1,3 @@
-from tkinter import Image
-
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
@@ -153,7 +151,7 @@ def edit_book_view(request, book_id):
                 if book.cover_image:
                     try:
                         book.cover_image.delete(save=False)
-                    except:
+                    except (OSError, ValueError):
                         pass
                 book.cover_image = cover_image
 
@@ -198,7 +196,7 @@ def delete_book_view(request, book_id):
         if book.cover_image:
             try:
                 book.cover_image.delete(save=False)
-            except:
+            except (OSError, ValueError):
                 pass
 
         book.delete()
